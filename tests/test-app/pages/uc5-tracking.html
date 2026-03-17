@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UC-5: BI Events & Pixel Tracking</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+      padding: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 1.6rem; margin-bottom: 4px; }
+    .subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 32px; }
+
+    /* Product hero */
+    .product-hero {
+      background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+      color: #fff;
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+    .product-hero .product-img {
+      width: 90px;
+      height: 90px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      flex-shrink: 0;
+    }
+    .product-hero h2 { font-size: 1.4rem; margin-bottom: 4px; }
+    .product-hero .price { font-size: 2rem; font-weight: 700; margin: 8px 0; }
+    .product-hero .orig-price { text-decoration: line-through; opacity: 0.7; font-size: 1rem; margin-left: 8px; }
+
+    /* Buttons */
+    .btn {
+      display: inline-block;
+      padding: 12px 28px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-primary { background: #fff; color: #1e40af; }
+    .btn-secondary { background: #0f172a; color: #fff; }
+    .btn-ghost {
+      background: transparent;
+      color: #2563eb;
+      border: 1px solid #2563eb;
+      font-size: 0.88rem;
+      padding: 8px 20px;
+    }
+    .btn:hover { opacity: 0.88; }
+
+    /* Sections */
+    .section {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 22px 26px;
+      margin-bottom: 20px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    h3 { font-size: 1rem; }
+    .badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .badge-bug  { background: #fee2e2; color: #b91c1c; }
+    .badge-info { background: #dbeafe; color: #1d4ed8; }
+    .desc { font-size: 0.83rem; color: #64748b; margin-bottom: 14px; line-height: 1.5; }
+
+    /* Event log */
+    #event-log {
+      background: #0f172a;
+      color: #94a3b8;
+      border-radius: 6px;
+      padding: 14px 16px;
+      font-family: 'Menlo', 'Consolas', monospace;
+      font-size: 0.78rem;
+      line-height: 1.7;
+      min-height: 80px;
+      max-height: 260px;
+      overflow-y: auto;
+      margin-top: 16px;
+    }
+    #event-log .log-line { display: block; }
+    #event-log .ok   { color: #86efac; }
+    #event-log .err  { color: #f87171; }
+    #event-log .warn { color: #fde68a; }
+    #event-log .ts   { color: #475569; margin-right: 6px; }
+
+    /* Newsletter */
+    .subscribe-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .subscribe-row input {
+      padding: 9px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      flex: 1 1 200px;
+    }
+
+    /* Scroll section */
+    .scroll-section {
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 32px 20px;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.9rem;
+      margin-top: 10px;
+    }
+    .scroll-section strong { display: block; font-size: 1rem; color: #1e293b; margin-bottom: 6px; }
+
+    a.back {
+      display: inline-block;
+      margin-top: 32px;
+      font-size: 0.9rem;
+      color: #2563eb;
+      text-decoration: none;
+    }
+    a.back:hover { text-decoration: underline; }
+
+    code { background: #f1f5f9; padding: 1px 5px; border-radius: 3px; font-size: 0.82rem; }
+  </style>
+</head>
+<body>
+
+  <h1>UC-5: BI Events &amp; Pixel Tracking</h1>
+  <p class="subtitle">Simulated e-commerce page with intentional tracking bugs. All requests visible in the Network tab.</p>
+
+  <!-- Product hero -->
+  <div class="product-hero">
+    <div class="product-img">&#127911;</div>
+    <div>
+      <h2>Premium Wireless Headphones</h2>
+      <p style="opacity:0.85;font-size:0.9rem">Model XZ-900 &bull; Free shipping</p>
+      <div>
+        <span class="price">$99</span>
+        <span class="orig-price">$149</span>
+      </div>
+      <!-- BUG 2: wrong element_id sent in click event ("btn-123" instead of "buy-btn") -->
+      <button class="btn btn-primary" id="buy-btn" onclick="handleBuyClick()">Buy Now</button>
+    </div>
+  </div>
+
+  <!-- BUG 1: PageView missing page_title (fired on load, documented here) -->
+  <div class="section">
+    <div class="section-header">
+      <h3>Bug 1: PageView Event — Missing <code>page_title</code></h3>
+      <span class="badge badge-bug">Bug — missing field</span>
+    </div>
+    <p class="desc">
+      A <code>PageView</code> event is fired to <code>POST /api/track</code> on page load, but the
+      payload omits the required <code>page_title</code> field. The server will accept it, but
+      downstream analytics will show null titles.
+      <br>Payload sent: <code>{ event: "PageView", page_url: "...", timestamp: "..." }</code>
+    </p>
+  </div>
+
+  <!-- BUG 2: Buy button — wrong element_id -->
+  <div class="section">
+    <div class="section-header">
+      <h3>Bug 2: "Buy Now" Click — Wrong <code>element_id</code></h3>
+      <span class="badge badge-bug">Bug — wrong field value</span>
+    </div>
+    <p class="desc">
+      Clicking "Buy Now" fires a click event to <code>POST /api/track</code>, but sends
+      <code>element_id: "btn-123"</code> instead of the correct <code>"buy-btn"</code>.
+      The actual DOM id of the button is <code>buy-btn</code>.
+    </p>
+    <button class="btn btn-secondary" id="buy-btn-copy" onclick="handleBuyClick()">Buy Now (click me)</button>
+  </div>
+
+  <!-- BUG 3: Duplicate conversion pixel -->
+  <div class="section">
+    <div class="section-header">
+      <h3>Bug 3: Duplicate Conversion Pixel</h3>
+      <span class="badge badge-bug">Bug — duplicate request</span>
+    </div>
+    <p class="desc">
+      A conversion pixel fires immediately: <code>/pixel.gif?event=purchase&amp;value=99</code>.
+      Then, 500 ms later, the exact same pixel fires again. Both requests appear in the Network tab.
+    </p>
+    <p style="font-size:0.82rem;color:#64748b;margin-top:6px">Pixel fired on page load — check Network tab for two identical requests ~500 ms apart.</p>
+  </div>
+
+  <!-- BUG 4: Subscribe button — empty payload -->
+  <div class="section">
+    <div class="section-header">
+      <h3>Bug 4: "Subscribe" Button — Empty Payload</h3>
+      <span class="badge badge-bug">Bug — empty payload</span>
+    </div>
+    <p class="desc">
+      Clicking Subscribe fires a tracking event to <code>POST /api/track</code> with an empty
+      object <code>{}</code> as the body. No event name, no user data, no context.
+    </p>
+    <div class="subscribe-row">
+      <input type="email" placeholder="Enter your email" id="subscribe-email">
+      <button class="btn btn-ghost" onclick="handleSubscribe()">Subscribe</button>
+    </div>
+  </div>
+
+  <!-- BUG 5: Malformed pixel params -->
+  <div class="section">
+    <div class="section-header">
+      <h3>Bug 5: Pixel with Missing <code>user_id</code> Value</h3>
+      <span class="badge badge-bug">Bug — malformed params</span>
+    </div>
+    <p class="desc">
+      A signup pixel fires with <code>user_id=</code> (empty value):
+      <code>/pixel.gif?event=signup&amp;user_id=</code>.
+      The parameter is present but has no value — the server will record an empty string.
+    </p>
+    <p style="font-size:0.82rem;color:#64748b;margin-top:6px">Pixel fired on page load — check Network tab for <code>/pixel.gif?event=signup&amp;user_id=</code>.</p>
+  </div>
+
+  <!-- BUG 6: Scroll section — missing IntersectionObserver -->
+  <div class="section">
+    <div class="section-header">
+      <h3>Bug 6: Scroll Section — Missing IntersectionObserver</h3>
+      <span class="badge badge-bug">Bug — no scroll event fired</span>
+    </div>
+    <p class="desc">
+      The element below <em>should</em> fire a <code>SectionVisible</code> tracking event when it
+      enters the viewport, but the <code>IntersectionObserver</code> code is absent. Scrolling down
+      to reveal this section produces no network request.
+    </p>
+    <div class="scroll-section" id="scroll-target">
+      <strong>Featured Section</strong>
+      Scroll tracking should fire here — but no IntersectionObserver is attached.
+    </div>
+  </div>
+
+  <!-- Live event log -->
+  <div class="section">
+    <div class="section-header">
+      <h3>Event Log</h3>
+      <span class="badge badge-info">Live</span>
+    </div>
+    <p class="desc">All tracking calls fired on this page are logged below (client-side view).</p>
+    <div id="event-log"><span class="log-line" style="color:#475569">Waiting for events…</span></div>
+  </div>
+
+  <a class="back" href="/">&#8592; Back to index</a>
+
+  <script>
+    var logEl = document.getElementById('event-log');
+    var logLines = [];
+
+    function ts() {
+      var d = new Date();
+      return d.toISOString().slice(11, 23);
+    }
+
+    function addLog(type, msg) {
+      var line = '<span class="log-line"><span class="ts">' + ts() + '</span><span class="' + type + '">' + msg + '</span></span>';
+      logLines.push(line);
+      if (logLines.length === 1) logEl.innerHTML = '';
+      logEl.innerHTML = logLines.join('');
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function sendTrack(payload, label) {
+      var body = JSON.stringify(payload);
+      addLog('warn', '[TRACK] ' + label + ' → POST /api/track ' + body);
+      fetch('/api/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: body
+      }).then(function(res) {
+        addLog(res.ok ? 'ok' : 'err', '[TRACK] ' + label + ' ← ' + res.status);
+      }).catch(function(e) {
+        addLog('err', '[TRACK] ' + label + ' error: ' + e.message);
+      });
+    }
+
+    function firePixel(url, label) {
+      addLog('warn', '[PIXEL] ' + label + ' → GET ' + url);
+      var img = new Image();
+      img.src = url;
+    }
+
+    // BUG 1: PageView missing page_title
+    sendTrack({
+      event: 'PageView',
+      page_url: window.location.href,
+      timestamp: new Date().toISOString()
+      // MISSING: page_title
+    }, 'PageView (missing page_title)');
+
+    // BUG 3: Duplicate conversion pixel
+    firePixel('/pixel.gif?event=purchase&value=99', 'purchase pixel #1');
+    setTimeout(function() {
+      firePixel('/pixel.gif?event=purchase&value=99', 'purchase pixel #2 (duplicate!)');
+    }, 500);
+
+    // BUG 5: Malformed pixel — missing user_id value
+    firePixel('/pixel.gif?event=signup&user_id=', 'signup pixel (empty user_id)');
+
+    // BUG 2: Buy button — wrong element_id
+    function handleBuyClick() {
+      sendTrack({
+        event: 'Click',
+        element_id: 'btn-123', // BUG: should be 'buy-btn'
+        page_url: window.location.href,
+        timestamp: new Date().toISOString()
+      }, 'BuyNow click (wrong element_id)');
+    }
+
+    // BUG 4: Subscribe — empty payload
+    function handleSubscribe() {
+      sendTrack({}, 'Subscribe click (empty payload)');
+    }
+
+    // BUG 6: Scroll section — NO IntersectionObserver intentionally omitted
+    // The code below is commented out to simulate the missing observer bug:
+    //
+    // var observer = new IntersectionObserver(function(entries) {
+    //   entries.forEach(function(entry) {
+    //     if (entry.isIntersecting) {
+    //       sendTrack({ event: 'SectionVisible', section: 'featured' }, 'SectionVisible');
+    //     }
+    //   });
+    // });
+    // observer.observe(document.getElementById('scroll-target'));
+  </script>
+
+</body>
+</html>

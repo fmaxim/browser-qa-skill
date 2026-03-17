@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UC-4: Network & Resource Loading</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f5f5f5;
+      color: #222;
+      padding: 24px;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 1.6rem; margin-bottom: 6px; }
+    .subtitle { color: #666; font-size: 0.9rem; margin-bottom: 28px; }
+    .section {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+    }
+    h2 {
+      font-size: 1rem;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .badge-bug { background: #fee2e2; color: #b91c1c; }
+    .badge-ok  { background: #dcfce7; color: #15803d; }
+    .description { font-size: 0.85rem; color: #555; margin-bottom: 14px; }
+    .resource-box {
+      background: #f9f9f9;
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-size: 0.85rem;
+    }
+    img { max-width: 100%; height: auto; display: block; }
+    .img-placeholder {
+      width: 200px;
+      height: 120px;
+      background: #e5e5e5;
+      border: 2px dashed #bbb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: #888;
+      border-radius: 4px;
+    }
+    .status { margin-top: 10px; font-size: 0.82rem; color: #888; }
+    .status span { font-weight: 600; }
+    a.back { display: inline-block; margin-top: 32px; font-size: 0.9rem; color: #2563eb; text-decoration: none; }
+    a.back:hover { text-decoration: underline; }
+    iframe { border: 1px solid #ddd; border-radius: 4px; width: 100%; height: 80px; background: #fafafa; }
+    #fetch-malformed-result, #fetch-ok-result { margin-top: 10px; font-size: 0.82rem; }
+    pre { background: #f0f0f0; border-radius: 4px; padding: 8px 12px; font-size: 0.8rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+  </style>
+</head>
+<body>
+
+  <h1>UC-4: Network &amp; Resource Loading</h1>
+  <p class="subtitle">Tests for resource load failures, slow responses, and bad API payloads. Intentional bugs are marked.</p>
+
+  <!-- BUG 1: Missing image 404 -->
+  <div class="section">
+    <h2>
+      Bug 1: Missing Static Image
+      <span class="badge badge-bug">Bug — 404</span>
+    </h2>
+    <p class="description">
+      Image src points to <code>/static/missing-image.png</code> which does not exist on the server.
+      Expect a 404 network error and a broken image icon in the browser.
+    </p>
+    <div class="resource-box">
+      <div class="img-placeholder" id="missing-img-wrapper">
+        <img
+          id="missing-img"
+          src="/static/missing-image.png"
+          alt="Missing image (intentional 404)"
+          width="200"
+          height="120"
+          onerror="document.getElementById('missing-img-wrapper').style.background='#fee2e2'; document.getElementById('missing-img-status').textContent='Failed to load (404 expected)'; document.getElementById('missing-img-status').style.color='#b91c1c';"
+        >
+      </div>
+      <p class="status" id="missing-img-status">Loading…</p>
+    </div>
+  </div>
+
+  <!-- BUG 2: Slow image endpoint -->
+  <div class="section">
+    <h2>
+      Bug 2: Slow Image (5 s delay)
+      <span class="badge badge-bug">Bug — slow response</span>
+    </h2>
+    <p class="description">
+      Image src points to <code>/api/slow-image</code> which deliberately delays 5 seconds before
+      responding. Expect the request to hang in the network tab for 5 s.
+    </p>
+    <div class="resource-box">
+      <div class="img-placeholder" id="slow-img-wrapper">
+        <img
+          id="slow-img"
+          src="/api/slow-image"
+          alt="Slow image (intentional 5 s delay)"
+          width="200"
+          height="120"
+          onload="document.getElementById('slow-img-status').textContent='Loaded (after delay)'; document.getElementById('slow-img-status').style.color='#15803d';"
+          onerror="document.getElementById('slow-img-status').textContent='Failed to load'; document.getElementById('slow-img-status').style.color='#b91c1c';"
+        >
+      </div>
+      <p class="status" id="slow-img-status">Loading (waiting up to 5 s)…</p>
+    </div>
+  </div>
+
+  <!-- BUG 3: Nonexistent JS script -->
+  <div class="section">
+    <h2>
+      Bug 3: Script Tag Loading Nonexistent JS
+      <span class="badge badge-bug">Bug — 404 + console error</span>
+    </h2>
+    <p class="description">
+      A <code>&lt;script&gt;</code> tag references <code>/static/nonexistent.js</code>.
+      The browser will log a console error when the resource fails to load.
+    </p>
+    <div class="resource-box">
+      <p>A script tag has been injected into the page:</p>
+      <pre>&lt;script src="/static/nonexistent.js"&gt;&lt;/script&gt;</pre>
+      <p class="status">Check the browser console — a resource load error should appear.</p>
+    </div>
+  </div>
+
+  <!-- BUG 4: Malformed JSON API -->
+  <div class="section">
+    <h2>
+      Bug 4: Fetch to Malformed JSON Endpoint
+      <span class="badge badge-bug">Bug — JSON parse error</span>
+    </h2>
+    <p class="description">
+      A <code>fetch()</code> call to <code>/api/data</code> returns a response body that is not
+      valid JSON. The <code>response.json()</code> call will throw a SyntaxError, visible in the
+      console.
+    </p>
+    <div class="resource-box">
+      <p>Fetch to <code>/api/data</code>:</p>
+      <div id="fetch-malformed-result">Fetching…</div>
+    </div>
+  </div>
+
+  <!-- OK: Working fetch for comparison -->
+  <div class="section">
+    <h2>
+      Working: Fetch to /api/products
+      <span class="badge badge-ok">Working</span>
+    </h2>
+    <p class="description">
+      A <code>fetch()</code> call to <code>/api/products</code> which returns valid JSON.
+      Used as a baseline comparison against the broken endpoint above.
+    </p>
+    <div class="resource-box">
+      <p>Fetch to <code>/api/products</code>:</p>
+      <div id="fetch-ok-result">Fetching…</div>
+    </div>
+  </div>
+
+  <!-- BUG 5: Cross-origin iframe -->
+  <div class="section">
+    <h2>
+      Bug 5: Cross-Origin Iframe Failure
+      <span class="badge badge-bug">Bug — cross-origin blocked</span>
+    </h2>
+    <p class="description">
+      An <code>&lt;iframe&gt;</code> loads <code>https://accounts.google.com</code>, which sets
+      <code>X-Frame-Options: DENY</code>. The browser will refuse to render it and may log a
+      console error.
+    </p>
+    <div class="resource-box">
+      <iframe
+        id="cross-origin-frame"
+        src="https://accounts.google.com"
+        title="Cross-origin iframe (intentional failure)"
+        sandbox
+      ></iframe>
+      <p class="status">Iframe above should fail to load due to cross-origin restrictions.</p>
+    </div>
+  </div>
+
+  <a class="back" href="/">&#8592; Back to index</a>
+
+  <!-- BUG 3 implementation: inject the nonexistent script -->
+  <script src="/static/nonexistent.js"></script>
+
+  <script>
+    // BUG 4: fetch malformed JSON
+    (function fetchMalformed() {
+      var el = document.getElementById('fetch-malformed-result');
+      fetch('/api/data')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          el.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        })
+        .catch(function(err) {
+          console.error('[UC4] /api/data parse error:', err);
+          el.innerHTML = '<span style="color:#b91c1c">Error: ' + err.message + ' (see console)</span>';
+        });
+    })();
+
+    // WORKING: fetch /api/products
+    (function fetchProducts() {
+      var el = document.getElementById('fetch-ok-result');
+      fetch('/api/products')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          el.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        })
+        .catch(function(err) {
+          console.error('[UC4] /api/products error:', err);
+          el.innerHTML = '<span style="color:#b91c1c">Unexpected error: ' + err.message + '</span>';
+        });
+    })();
+  </script>
+
+</body>
+</html>

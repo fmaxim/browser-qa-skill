@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UC-13: Accessibility Testing</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; padding: 2rem; }
+    h1 { margin-bottom: 1rem; }
+    .test-section { margin: 2rem 0; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; }
+    .test-section h2 { margin-bottom: 0.5rem; font-size: 1rem; color: #6b7280; }
+    /* BUG 4: Low contrast text */
+    .low-contrast { color: #d1d5db; background: #f3f4f6; padding: 1rem; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <!-- BUG 6: Missing skip-to-content link -->
+  <h1>UC-13: Accessibility Testing</h1>
+  <p><a href="/">Back to index</a></p>
+
+  <div class="test-section">
+    <h2>Bug 1: Image missing alt attribute</h2>
+    <!-- BUG: No alt attribute -->
+    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%23818cf8'%3E%3Crect width='100' height='100'/%3E%3C/svg%3E" width="100" height="100">
+    <p style="margin-top:0.5rem;">The image above has no alt attribute. Screen readers cannot describe it.</p>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 2: Form input without associated label</h2>
+    <form>
+      <!-- BUG: No <label> element, no aria-label -->
+      <input type="text" placeholder="Enter your name" style="padding:0.5rem; border:1px solid #d1d5db; border-radius:4px; width:300px;">
+      <br><br>
+      <!-- BUG: Another input without label -->
+      <input type="email" placeholder="Enter email" style="padding:0.5rem; border:1px solid #d1d5db; border-radius:4px; width:300px;">
+      <br><br>
+      <!-- Good example for comparison -->
+      <label for="phone-input" style="display:block; margin-bottom:0.25rem; font-weight:500;">Phone (properly labeled):</label>
+      <input id="phone-input" type="tel" placeholder="555-1234" style="padding:0.5rem; border:1px solid #d1d5db; border-radius:4px; width:300px;">
+    </form>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 3: Button with no accessible name</h2>
+    <!-- BUG: Empty button, no text, no aria-label -->
+    <button style="width:40px; height:40px; background:#2563eb; border:none; border-radius:4px; cursor:pointer;"></button>
+    <span style="margin-left:0.5rem; color:#6b7280;">This button has no text content and no aria-label.</span>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 4: Low color contrast (fails WCAG AA)</h2>
+    <div class="low-contrast">
+      This text has very low contrast against its background. The color is #d1d5db on #f3f4f6,
+      which is approximately a 1.4:1 contrast ratio. WCAG AA requires at least 4.5:1 for normal text.
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 5: Focus trap in modal</h2>
+    <button id="open-trap" style="padding:0.5rem 1rem; background:#2563eb; color:white; border:none; border-radius:4px; cursor:pointer;">
+      Open Modal (Focus Trap)
+    </button>
+    <div id="focus-trap-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:100;">
+      <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:2rem; border-radius:8px; max-width:400px;">
+        <h3>Modal with Focus Trap</h3>
+        <p>You can tab between these inputs, but you can NOT tab out of this modal. The Escape key also doesn't work.</p>
+        <input type="text" placeholder="Input 1" style="display:block; width:100%; padding:0.5rem; margin:0.5rem 0; border:1px solid #d1d5db; border-radius:4px;">
+        <input type="text" placeholder="Input 2" style="display:block; width:100%; padding:0.5rem; margin:0.5rem 0; border:1px solid #d1d5db; border-radius:4px;">
+        <!-- BUG: No close button, no Escape handler, tab is trapped -->
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 7: Div with role="button" but no keyboard handler</h2>
+    <!-- BUG: Has role="button" but no tabindex, no keydown handler -->
+    <div role="button" style="display:inline-block; padding:0.75rem 1.5rem; background:#16a34a; color:white; border-radius:4px; cursor:pointer;"
+         onclick="this.textContent='Clicked!'">
+      Click Me (Div, not Button)
+    </div>
+    <p style="margin-top:0.5rem; color:#6b7280;">
+      This div has role="button" and onclick, but cannot be activated via keyboard (no tabindex, no keydown handler).
+    </p>
+  </div>
+
+  <script>
+    // Focus trap modal
+    document.getElementById('open-trap').addEventListener('click', () => {
+      const modal = document.getElementById('focus-trap-modal');
+      modal.style.display = 'block';
+      modal.querySelector('input').focus();
+      // BUG: No escape key handler, no close button, no focus management
+    });
+  </script>
+</body>
+</html>

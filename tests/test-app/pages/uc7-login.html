@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UC-7: Login — Browser Auto Agents Test</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #1a1a2e;
+    }
+
+    .back-link {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      font-size: 13px;
+      color: #6c757d;
+      text-decoration: none;
+    }
+    .back-link:hover { color: #343a40; text-decoration: underline; }
+
+    .brand-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .brand-header .logo {
+      width: 48px;
+      height: 48px;
+      background: #4f46e5;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: #fff;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .brand-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+    .brand-header p {
+      font-size: 13px;
+      color: #6c757d;
+      margin-top: 4px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      padding: 36px 40px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .card h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: #1a1a2e;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #495057;
+      margin-bottom: 6px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #dee2e6;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      color: #1a1a2e;
+      outline: none;
+      transition: border-color 0.15s;
+      background: #fff;
+    }
+    .form-group input:focus { border-color: #4f46e5; }
+    .form-group input::placeholder { color: #adb5bd; }
+
+    .btn-login {
+      width: 100%;
+      padding: 11px;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: background 0.15s;
+    }
+    .btn-login:hover { background: #4338ca; }
+    .btn-login:disabled { background: #a5b4fc; cursor: not-allowed; }
+
+    .status-msg {
+      margin-top: 16px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      display: none;
+    }
+    .status-msg.error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; display: block; }
+    .status-msg.success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; display: block; }
+    .status-msg.info { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; display: block; }
+
+    .hint {
+      margin-top: 20px;
+      padding: 12px 14px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #6c757d;
+      line-height: 1.6;
+    }
+    .hint strong { color: #495057; }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #f1f3f5;
+      margin: 20px 0;
+    }
+
+    .bug-badge {
+      display: inline-block;
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffc107;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 6px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+
+  <a href="/" class="back-link">← Back to index</a>
+
+  <div class="brand-header">
+    <div class="logo">A</div>
+    <h1>AutoTest App</h1>
+    <p>Browser Automation Testing Platform</p>
+  </div>
+
+  <div class="card">
+    <h2>Sign in to your account</h2>
+
+    <form id="loginForm" novalidate>
+      <div class="form-group">
+        <label for="email">Email address</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="user@example.com"
+          autocomplete="email"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="password">
+          Password
+          <span class="bug-badge">BUG</span>
+        </label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="Enter your password"
+          autocomplete="current-password"
+          required
+        >
+      </div>
+
+      <button type="submit" class="btn-login" id="loginBtn">Login</button>
+
+      <div id="statusMsg" class="status-msg"></div>
+    </form>
+
+    <hr class="divider">
+
+    <div class="hint">
+      <strong>Test credentials:</strong><br>
+      Email: <code>admin@example.com</code><br>
+      Password: <code>password123</code><br><br>
+      <strong>Bug (UC-7):</strong> On success, the token is exposed in the redirect URL:
+      <code>/dashboard?token=XXX</code> — visible in browser history and server logs.
+    </div>
+  </div>
+
+  <script>
+    const DEBUG = localStorage.getItem('debug') === 'true';
+    const log = DEBUG ? (...args) => console.log('[DEBUG:uc7-login]', ...args) : () => {};
+
+    const form = document.getElementById('loginForm');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const loginBtn = document.getElementById('loginBtn');
+    const statusMsg = document.getElementById('statusMsg');
+
+    function showStatus(msg, type) {
+      statusMsg.textContent = msg;
+      statusMsg.className = 'status-msg ' + type;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      if (!email || !password) {
+        showStatus('Please fill in all fields.', 'error');
+        return;
+      }
+
+      loginBtn.disabled = true;
+      loginBtn.textContent = 'Signing in…';
+      statusMsg.className = 'status-msg';
+
+      log('submitting login', { email });
+
+      try {
+        const res = await fetch('http://localhost:3099/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+          credentials: 'include'
+        });
+
+        const data = await res.json();
+        log('login response', { status: res.status, success: data.success });
+
+        if (data.success) {
+          showStatus('Login successful! Redirecting…', 'success');
+
+          // BUG (UC-7): Token is appended to the redirect URL.
+          // This exposes the session token in browser history, server access logs,
+          // and the Referer header on subsequent navigations.
+          const redirectUrl = data.redirect || `/dashboard?token=${data.token}`;
+          log('redirecting to', redirectUrl);
+
+          setTimeout(() => {
+            window.location.href = redirectUrl;
+          }, 800);
+        } else {
+          showStatus(data.message || 'Invalid credentials. Please try again.', 'error');
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'Login';
+        }
+      } catch (err) {
+        log('fetch error', err);
+        showStatus('Could not reach the server. Is it running on port 3099?', 'error');
+        loginBtn.disabled = false;
+        loginBtn.textContent = 'Login';
+      }
+    });
+  </script>
+
+</body>
+</html>

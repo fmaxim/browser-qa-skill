@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UC-8: Security Testing — Browser Auto Agents Test</title>
+  <!-- API_KEY: sk-test-12345 -->
+  <!-- DB_PASSWORD: admin123 -->
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 32px;
+    }
+
+    a { color: #7dd3fc; }
+    a:hover { color: #38bdf8; }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 28px;
+      font-size: 13px;
+      color: #64748b;
+      text-decoration: none;
+    }
+    .back-link:hover { color: #94a3b8; text-decoration: underline; }
+
+    .page-title {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #f1f5f9;
+    }
+    .page-subtitle {
+      font-size: 14px;
+      color: #64748b;
+      margin-bottom: 32px;
+    }
+
+    .section {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid #334155;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .section-header h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .vuln-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .vuln-badge.critical { background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.4); }
+    .vuln-badge.high     { background: rgba(249,115,22,0.2); color: #fb923c; border: 1px solid rgba(249,115,22,0.4); }
+    .vuln-badge.medium   { background: rgba(234,179,8,0.2);  color: #facc15; border: 1px solid rgba(234,179,8,0.4); }
+    .vuln-badge.info     { background: rgba(99,102,241,0.2); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.4); }
+
+    .description {
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .description code {
+      background: #0f172a;
+      color: #7dd3fc;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    /* XSS search */
+    .search-row {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+    .search-input {
+      flex: 1;
+      padding: 9px 12px;
+      background: #0f172a;
+      border: 1.5px solid #334155;
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+    .search-input:focus { border-color: #4f46e5; }
+    .search-input::placeholder { color: #475569; }
+    .btn {
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary { background: #4f46e5; color: #fff; }
+    .btn-primary:hover { background: #4338ca; }
+    .btn-danger  { background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.4); }
+    .btn-danger:hover { background: rgba(239,68,68,0.35); }
+
+    .search-result {
+      margin-top: 12px;
+      padding: 12px;
+      background: #0f172a;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #94a3b8;
+      min-height: 40px;
+    }
+
+    /* Code block */
+    .code-block {
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 14px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #94a3b8;
+      overflow-x: auto;
+      line-height: 1.7;
+      margin-top: 4px;
+    }
+    .code-block .key   { color: #f97316; }
+    .code-block .value { color: #4ade80; }
+    .code-block .str   { color: #facc15; }
+
+    /* Open redirect */
+    .redirect-demo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    /* CORS display */
+    .cors-result {
+      margin-top: 12px;
+      padding: 12px;
+      background: #0f172a;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #4ade80;
+      min-height: 40px;
+    }
+
+    /* Error leak */
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .error-output {
+      margin-top: 12px;
+      padding: 12px;
+      background: #0f172a;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #f87171;
+      white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    /* Eval demo */
+    .eval-warning {
+      margin-top: 10px;
+      padding: 10px 14px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 8px;
+      font-size: 12px;
+      color: #f87171;
+      line-height: 1.6;
+    }
+
+    /* Security score */
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 4px;
+    }
+    .score-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: #0f172a;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+    .score-item .icon { font-size: 16px; flex-shrink: 0; }
+    .score-item .name { color: #94a3b8; }
+    .score-item.fail .icon-wrap { color: #f87171; }
+    .score-item.pass .icon-wrap { color: #4ade80; }
+
+    .score-summary {
+      margin-top: 16px;
+      padding: 14px 18px;
+      background: rgba(239,68,68,0.1);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #f87171;
+      text-align: center;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #1e293b;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <a href="/" class="back-link">← Back to index</a>
+
+  <h1 class="page-title">UC-8: Security Testing</h1>
+  <p class="page-subtitle">
+    This page contains <strong>intentional security vulnerabilities</strong> for automated security scanning tests.
+    Do not deploy to production.
+  </p>
+
+  <!-- ────────────────────────────────────────────────
+       1. XSS — Reflected via innerHTML
+  ──────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <h2>1. Cross-Site Scripting (XSS)</h2>
+      <span class="vuln-badge critical">Critical</span>
+    </div>
+    <p class="description">
+      The search query from the URL parameter <code>?q=</code> is reflected into the DOM
+      using <code>innerHTML</code> without any escaping or sanitization. Try:
+      <code>?q=&lt;img src=x onerror=alert(1)&gt;</code>
+    </p>
+
+    <div class="search-row">
+      <input
+        type="text"
+        id="searchInput"
+        class="search-input"
+        placeholder='Try: <img src=x onerror=alert(1)>'
+      >
+      <button class="btn btn-primary" id="searchBtn">Search</button>
+    </div>
+
+    <!-- BUG (UC-8): Search results are reflected with innerHTML — XSS vector -->
+    <div class="search-result" id="searchResult">
+      Enter a search query above or pass <code>?q=</code> in the URL.
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────────────
+       2. Sensitive data in HTML comments (see <head>)
+  ──────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <h2>2. Sensitive Data in HTML Comments</h2>
+      <span class="vuln-badge high">High</span>
+    </div>
+    <p class="description">
+      The page source contains credentials embedded in HTML comments.
+      Inspect the <code>&lt;head&gt;</code> of this page to find:
+    </p>
+    <div class="code-block">
+      <span class="key">&lt;!-- API_KEY: </span><span class="value">sk-test-12345</span><span class="key"> --&gt;</span><br>
+      <span class="key">&lt;!-- DB_PASSWORD: </span><span class="value">admin123</span><span class="key"> --&gt;</span>
+    </div>
+    <p class="description" style="margin-top:12px;margin-bottom:0">
+      These are readable by any user who views the page source or by automated scanners.
+    </p>
+  </div>
+
+  <!-- ────────────────────────────────────────────────
+       3. Open Redirect
+  ──────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <h2>3. Open Redirect</h2>
+      <span class="vuln-badge high">High</span>
+    </div>
+    <p class="description">
+      The redirect endpoint accepts an arbitrary <code>url</code> parameter with no validation or allowlist.
+      An attacker can craft phishing links that appear to originate from a trusted domain.
+    </p>
+    <div class="redirect-demo">
+      <!-- BUG (UC-8): Open redirect — destination URL is user-controlled with no validation -->
+      <a
+        href="http://localhost:3099/redirect?url=https://evil.com"
+        id="openRedirectLink"
+        style="padding:9px 16px;background:rgba(249,115,22,0.15);color:#fb923c;border:1px solid rgba(249,115,22,0.4);border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;"
+      >
+        Click here → /redirect?url=https://evil.com
+      </a>
+      <span style="font-size:12px;color:#64748b">Will redirect to an external URL</span>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────────────
+       4. CORS — Access-Control-Allow-Origin
+  ──────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <h2>4. CORS Misconfiguration</h2>
+      <span class="vuln-badge medium">Medium</span>
+    </div>
+    <p class="description">
+      Fetches <code>/api/products</code> and displays the <code>Access-Control-Allow-Origin</code>
+      response header. A wildcard (<code>*</code>) or overly broad origin allows cross-origin
+      requests from any site.
+    </p>
+
+    <button class="btn btn-primary" id="checkCorsBtn">Fetch /api/products and check CORS header</button>
+    <div class="cors-result" id="corsResult">Click the button to check.</div>
+  </div>
+
+  <!-- ────────────────────────────────────────────────
+       5. eval() on URL param
+  ──────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <h2>5. eval() on URL Parameter</h2>
+      <span class="vuln-badge critical">Critical</span>
+    </div>
+    <p class="description">
+      An inline script reads the <code>?code=</code> URL parameter and passes it directly
+      to <code>eval()</code>. Any JavaScript supplied in the URL is executed with full
+      page privileges. Try: <code>?code=alert('pwned')</code>
+    </p>
+
+    <div class="eval-warning">
+      <strong>Active code execution vector present on this page.</strong><br>
+      The script below runs on every page load. Passing <code>?code=...</code> in the URL
+      will execute arbitrary JavaScript. Check the DevTools console for output.
+    </div>
+
+    <div class="code-block" style="margin-top:12px">
+      <span class="key">// Inline script (runs on load):</span><br>
+      <span class="str">eval</span>(new URLSearchParams(location.search).get(<span class="str">'code'</span>));
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────────────
+       6. Stack trace & credential leak via /api/error
+  ──────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <h2>6. Error Information Disclosure</h2>
+      <span class="vuln-badge high">High</span>
+    </div>
+    <p class="description">
+      The <code>/api/error</code> endpoint returns a full Node.js stack trace along with
+      internal configuration values including database credentials. This is a common
+      misconfiguration in development environments left exposed in production.
+    </p>
+
+    <div class="btn-row">
+      <button class="btn btn-danger" id="triggerErrorBtn">Fetch /api/error</button>
+      <a
+        href="http://localhost:3099/api/error"
+        target="_blank"
+        style="display:inline-flex;align-items:center;padding:9px 16px;background:rgba(99,102,241,0.15);color:#a5b4fc;border:1px solid rgba(99,102,241,0.4);border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;"
+      >
+        Open in new tab ↗
+      </a>
+    </div>
+    <pre class="error-output" id="errorOutput"></pre>
+  </div>
+
+  <!-- ────────────────────────────────────────────────
+       7. Security Score
+  ──────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <h2>7. Security Score</h2>
+      <span class="vuln-badge info">Summary</span>
+    </div>
+    <p class="description">
+      Overview of intentional vulnerabilities present on this page for scanner verification.
+    </p>
+
+    <div class="score-grid" id="scoreGrid">
+      <div class="score-item fail">
+        <span class="icon-wrap">✗</span>
+        <div>
+          <div style="font-weight:600;color:#f87171">XSS (innerHTML)</div>
+          <div class="name">Reflected — Critical</div>
+        </div>
+      </div>
+      <div class="score-item fail">
+        <span class="icon-wrap">✗</span>
+        <div>
+          <div style="font-weight:600;color:#f87171">Credentials in Comments</div>
+          <div class="name">API key + DB password — High</div>
+        </div>
+      </div>
+      <div class="score-item fail">
+        <span class="icon-wrap">✗</span>
+        <div>
+          <div style="font-weight:600;color:#f87171">Open Redirect</div>
+          <div class="name">Unvalidated URL param — High</div>
+        </div>
+      </div>
+      <div class="score-item fail">
+        <span class="icon-wrap">✗</span>
+        <div>
+          <div style="font-weight:600;color:#fb923c">CORS Wildcard</div>
+          <div class="name">Access-Control-Allow-Origin: * — Medium</div>
+        </div>
+      </div>
+      <div class="score-item fail">
+        <span class="icon-wrap">✗</span>
+        <div>
+          <div style="font-weight:600;color:#f87171">eval() on URL param</div>
+          <div class="name">Remote code execution — Critical</div>
+        </div>
+      </div>
+      <div class="score-item fail">
+        <span class="icon-wrap">✗</span>
+        <div>
+          <div style="font-weight:600;color:#f87171">Stack trace / cred leak</div>
+          <div class="name">/api/error endpoint — High</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="score-summary">
+      Security Score: 0 / 6 — 6 vulnerabilities detected
+    </div>
+  </div>
+
+  <!-- BUG (UC-8): eval() on URL param — executes arbitrary JS from ?code= -->
+  <script>
+    (function() {
+      var code = new URLSearchParams(location.search).get('code');
+      if (code) {
+        // BUG: Direct eval of user-supplied URL parameter
+        eval(code);
+      }
+    })();
+  </script>
+
+  <script>
+    const DEBUG = localStorage.getItem('debug') === 'true';
+    const log = DEBUG ? (...args) => console.log('[DEBUG:uc8-security]', ...args) : () => {};
+
+    // ── 1. XSS: reflect ?q= via innerHTML ──────────────────────────────────
+    function reflectSearch(query) {
+      const resultEl = document.getElementById('searchResult');
+      if (!query) {
+        resultEl.innerHTML = 'Enter a search query above or pass <code>?q=</code> in the URL.';
+        return;
+      }
+      log('reflecting search query', query);
+      // BUG (UC-8): No sanitization — raw HTML injected via innerHTML
+      resultEl.innerHTML = 'Search results for: <strong>' + query + '</strong>';
+    }
+
+    // Reflect from URL on page load
+    const urlParams = new URLSearchParams(location.search);
+    const queryParam = urlParams.get('q');
+    if (queryParam) {
+      document.getElementById('searchInput').value = queryParam;
+      reflectSearch(queryParam);
+    }
+
+    document.getElementById('searchBtn').addEventListener('click', () => {
+      reflectSearch(document.getElementById('searchInput').value);
+    });
+    document.getElementById('searchInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') reflectSearch(document.getElementById('searchInput').value);
+    });
+
+    // ── 4. CORS check ───────────────────────────────────────────────────────
+    document.getElementById('checkCorsBtn').addEventListener('click', async () => {
+      const resultEl = document.getElementById('corsResult');
+      resultEl.textContent = 'Fetching…';
+      log('fetching /api/products for CORS check');
+      try {
+        const res = await fetch('http://localhost:3099/api/products', {
+          method: 'GET',
+          credentials: 'include'
+        });
+        const acao = res.headers.get('Access-Control-Allow-Origin');
+        const acam = res.headers.get('Access-Control-Allow-Methods');
+        const acah = res.headers.get('Access-Control-Allow-Headers');
+        const acac = res.headers.get('Access-Control-Allow-Credentials');
+
+        log('CORS headers', { acao, acam, acah, acac });
+
+        let output = `Access-Control-Allow-Origin:      ${acao || '(not set)'}\n`;
+        output    += `Access-Control-Allow-Methods:     ${acam || '(not set)'}\n`;
+        output    += `Access-Control-Allow-Headers:     ${acah || '(not set)'}\n`;
+        output    += `Access-Control-Allow-Credentials: ${acac || '(not set)'}\n`;
+
+        if (acao === '*') {
+          output += '\n⚠  Wildcard origin — all cross-origin requests permitted.';
+          resultEl.style.color = '#f87171';
+        } else {
+          resultEl.style.color = '#4ade80';
+        }
+        resultEl.textContent = output;
+      } catch (err) {
+        resultEl.textContent = `Error: ${err.message}\nMake sure the server is running on port 3099.`;
+        resultEl.style.color = '#f87171';
+        log('CORS fetch error', err);
+      }
+    });
+
+    // ── 6. Error / stack trace leak ─────────────────────────────────────────
+    document.getElementById('triggerErrorBtn').addEventListener('click', async () => {
+      const outputEl = document.getElementById('errorOutput');
+      outputEl.style.display = 'block';
+      outputEl.textContent = 'Fetching /api/error…';
+      log('fetching /api/error');
+      try {
+        const res = await fetch('http://localhost:3099/api/error');
+        const text = await res.text();
+        log('error endpoint response', { status: res.status, length: text.length });
+        try {
+          const json = JSON.parse(text);
+          outputEl.textContent = JSON.stringify(json, null, 2);
+        } catch (_) {
+          outputEl.textContent = text;
+        }
+      } catch (err) {
+        outputEl.textContent = `Fetch failed: ${err.message}\nMake sure the server is running on port 3099.`;
+        log('error fetch error', err);
+      }
+    });
+  </script>
+
+</body>
+</html>

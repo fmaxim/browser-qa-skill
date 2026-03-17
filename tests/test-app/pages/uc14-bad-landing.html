@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UC-14: Bad Brand Landing Page</title>
+  <style>
+    /* INTENTIONALLY BAD BRAND/LANDING PAGE DESIGN */
+    body { margin: 0; padding: 0; }
+    /* Hero section - everything wrong */
+    .hero {
+      background: linear-gradient(to right, #ff0000, #ff6600, #ffcc00, #33cc33, #3399ff, #9933ff);
+      /* Rainbow gradient - unprofessional */
+      min-height: 60vh; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center; padding: 20px;
+    }
+    .hero h1 {
+      font-family: 'Impact', sans-serif; /* Impact font - aggressive */
+      font-size: 60px; color: white;
+      text-shadow: 3px 3px 0 black, -3px -3px 0 black, 3px -3px 0 black, -3px 3px 0 black;
+      /* Heavy text stroke */
+      text-transform: uppercase; letter-spacing: -2px;
+    }
+    .hero .subtitle {
+      font-family: 'Papyrus', fantasy; font-size: 24px; color: #ffff00;
+      max-width: none; /* No max-width - too wide on desktop */
+    }
+    .cta-btn {
+      margin-top: 20px; padding: 10px 30px;
+      background: #ff0000; color: white; border: 3px solid white;
+      font-size: 24px; font-family: 'Comic Sans MS', cursive;
+      cursor: pointer; animation: blink 0.5s infinite; /* Blinking button! */
+    }
+    @keyframes blink { 50% { opacity: 0.3; } }
+    /* Features section */
+    .features { padding: 20px; background: white; }
+    .features h2 { text-align: center; font-size: 36px; color: #333;
+      font-family: serif; /* Inconsistent with hero */ margin-bottom: 10px; }
+    .feature-grid { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+    .feature-item {
+      width: 250px; padding: 15px; text-align: center;
+      border: 1px solid #eee; border-radius: 0; /* No border radius - inconsistent */
+    }
+    .feature-item:nth-child(1) { font-family: Arial; font-size: 14px; }
+    .feature-item:nth-child(2) { font-family: Georgia; font-size: 16px; }
+    .feature-item:nth-child(3) { font-family: Verdana; font-size: 13px; }
+    /* Three different fonts for features! */
+    .feature-icon { font-size: 50px; margin-bottom: 5px; }
+    /* Testimonials */
+    .testimonials { background: #f0f0f0; padding: 20px; }
+    .testimonials h2 { text-align: left; /* Inconsistent alignment */ color: red;
+      font-family: 'Times New Roman'; text-decoration: underline; }
+    .testimonial {
+      background: white; padding: 10px; margin: 10px 0;
+      border-left: 5px solid; /* Color varies wildly */
+    }
+    .testimonial:nth-child(2) { border-color: red; font-style: italic; }
+    .testimonial:nth-child(3) { border-color: blue; font-weight: bold; }
+    .testimonial:nth-child(4) { border-color: green; text-transform: uppercase; font-size: 11px; }
+    /* Pricing - misaligned */
+    .pricing { padding: 20px; text-align: center; }
+    .pricing h2 { font-size: 40px; color: #333; font-family: sans-serif; }
+    .price-cards { display: flex; justify-content: center; gap: 5px; /* Too tight */ }
+    .price-card { width: 200px; border: 1px solid #ddd; padding: 15px; }
+    .price-card:nth-child(2) {
+      transform: scale(1.3); /* Oversized middle card overlaps others */
+      background: gold; z-index: 1;
+      box-shadow: 0 0 30px rgba(255,215,0,0.8);
+    }
+    .price-amount { font-size: 36px; font-weight: 900; }
+    /* Footer */
+    .footer {
+      background: #000; color: #222; /* Nearly invisible text */
+      padding: 10px; text-align: center; font-size: 10px;
+    }
+    .footer a { color: #111; } /* Links even harder to see */
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>AMAZETECH PRO</h1>
+    <div class="subtitle">The #1 Best Most Amazing Revolutionary Platform Ever Created In The History Of Technology</div>
+    <button class="cta-btn">CLICK HERE NOW!!!</button>
+    <p style="color:white; font-size:11px; margin-top:5px;">* No credit card required (jk we'll charge you)</p>
+  </div>
+
+  <div class="features">
+    <h2>Why We're The Best</h2>
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="feature-icon">&#x1F680;</div>
+        <h3 style="font-size:20px;">Fast</h3>
+        <p>Our platform is really fast. Like, super fast. The fastest.</p>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">&#x1F512;</div>
+        <h3 style="font-size:14px; color:#999;">Secure</h3>
+        <p>We use the best security. Military grade. Blockchain. AI. Quantum.</p>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">&#x2764;</div>
+        <h3 style="font-size:24px; font-weight:100;">Easy</h3>
+        <p>SO easy to use. Even your grandma could use it. Probably.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="testimonials">
+    <h2>What People Say</h2>
+    <div class="testimonial">"This changed my life!" - John D.</div>
+    <div class="testimonial">"I can't believe how amazing this is!" - Jane S.</div>
+    <div class="testimonial">"BEST PURCHASE EVER MADE. 10/10 WOULD BUY AGAIN." - Bob M.</div>
+  </div>
+
+  <div class="pricing">
+    <h2>Pricing</h2>
+    <div class="price-cards">
+      <div class="price-card">
+        <h3>Basic</h3>
+        <div class="price-amount" style="color:#666;">$9</div>
+        <p style="font-size:11px;">per month</p>
+        <ul style="text-align:left; font-size:12px; list-style:none; padding:0;">
+          <li>&#10003; 1 user</li><li>&#10003; Basic features</li><li>&#10007; Support</li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <h3 style="color:red; font-size:24px;">&#9733; PRO &#9733;</h3>
+        <div class="price-amount" style="color:red;">$99</div>
+        <p style="font-size:11px;">per month</p>
+        <ul style="text-align:left; font-size:12px; list-style:none; padding:0;">
+          <li>&#10003; Unlimited</li><li>&#10003; All features</li><li>&#10003; 24/7 support</li>
+        </ul>
+        <button style="background:red; color:white; border:none; padding:8px 16px; margin-top:5px; cursor:pointer;">BUY NOW</button>
+      </div>
+      <div class="price-card">
+        <h3>Enterprise</h3>
+        <div class="price-amount" style="color:#333;">$???</div>
+        <p style="font-size:11px;">contact us</p>
+        <ul style="text-align:left; font-size:12px; list-style:none; padding:0;">
+          <li>&#10003; Everything</li><li>&#10003; Custom stuff</li><li>&#10003; A person</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Copyright 2020 AmazeTech Pro Inc. | Privacy | Terms | Contact | Sitemap | Blog | Careers | Press</p>
+    <p><a href="#">Unsubscribe</a> | <a href="#">Do Not Sell My Data</a></p>
+  </div>
+
+  <p style="padding:1rem; background:#f5f5f5;"><a href="/">Back to index</a></p>
+</body>
+</html>

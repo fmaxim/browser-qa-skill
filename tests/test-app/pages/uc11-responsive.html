@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UC-11: Responsive Design Testing</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; padding: 1rem; }
+    h1 { margin-bottom: 1rem; font-size: 1.5rem; }
+    .test-section { margin: 2rem 0; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; }
+    .test-section h2 { margin-bottom: 0.5rem; font-size: 1rem; color: #6b7280; }
+
+    .viewport-info { background: #f0fdf4; padding: 0.75rem; border-radius: 8px; font-family: monospace;
+      font-size: 0.85rem; margin-bottom: 1rem; position: sticky; top: 0; z-index: 10; }
+
+    /* BUG 1: Hamburger menu with tiny click area */
+    .hamburger { width: 20px; height: 20px; background: #333; color: white; border: none;
+      font-size: 10px; cursor: pointer; display: none; }
+    @media (max-width: 768px) { .hamburger { display: inline-block; } }
+
+    /* BUG 2: Long heading that overflows on small screens */
+    .long-heading { font-size: 2rem; white-space: nowrap; /* Prevents wrapping - bug! */ }
+
+    /* BUG 3: Fixed width element causes horizontal scroll */
+    .wide-element { width: 500px; background: #dbeafe; padding: 1rem; border-radius: 8px; }
+
+    /* BUG 4: Media query gap - hidden between 375-400px */
+    .gap-section { background: #fef3c7; padding: 1rem; border-radius: 8px; }
+    @media (min-width: 375px) and (max-width: 400px) { .gap-section { display: none; } }
+
+    /* BUG 5: Font too small for mobile */
+    .tiny-text { font-size: 10px; line-height: 1.2; }
+
+    /* BUG 6: Flex no-wrap causing overflow */
+    .button-grid { display: flex; flex-wrap: nowrap; /* Bug: should be wrap */ gap: 0.5rem; }
+    .button-grid button { padding: 0.75rem 1.5rem; background: #2563eb; color: white; border: none;
+      border-radius: 4px; white-space: nowrap; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <div class="viewport-info" id="viewport-info">
+    Viewport: <span id="vw">-</span> x <span id="vh">-</span> | DPR: <span id="dpr">-</span>
+  </div>
+
+  <h1>UC-11: Responsive Design Testing</h1>
+  <p><a href="/">Back to index</a></p>
+
+  <div class="test-section">
+    <h2>Bug 1: Hamburger button too small (20x20px, should be 44x44)</h2>
+    <button class="hamburger" id="hamburger-btn" aria-label="Menu">&#9776;</button>
+    <nav id="mobile-menu" style="display:none; background:#f3f4f6; padding:1rem; margin-top:0.5rem; border-radius:4px;">
+      <a href="#">Home</a> | <a href="#">About</a> | <a href="#">Contact</a>
+    </nav>
+    <p style="margin-top:0.5rem; font-size:0.85rem; color:#6b7280;">
+      The hamburger icon is only 20x20px. WCAG requires touch targets to be at least 44x44px.
+      Only visible on mobile (&lt;768px).
+    </p>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 2: Heading overflows on narrow viewport (white-space: nowrap)</h2>
+    <h3 class="long-heading">This Is An Extremely Long Page Heading That Will Overflow On Mobile Devices</h3>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 3: Fixed-width element causes horizontal scroll on mobile</h2>
+    <div class="wide-element">
+      This element is 500px wide with no max-width or responsive sizing. On screens narrower than 500px, it causes horizontal scrolling.
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 4: Media query gap (invisible at 375-400px)</h2>
+    <div class="gap-section">
+      This yellow section disappears completely on viewports between 375px and 400px wide.
+      It's visible at 374px and below, and at 401px and above, but not in between.
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 5: Font size too small for mobile (10px)</h2>
+    <p class="tiny-text">
+      This paragraph uses a 10px font size, which is far below the recommended minimum of 16px for mobile devices.
+      Users on mobile will need to zoom in to read this text, which creates a poor user experience.
+      The recommended minimum font size for body text on mobile is 16px to ensure readability.
+    </p>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 6: Button grid doesn't wrap on mobile (flex-wrap: nowrap)</h2>
+    <div class="button-grid">
+      <button>Dashboard</button>
+      <button>Settings</button>
+      <button>Analytics</button>
+      <button>Reports</button>
+      <button>Users</button>
+      <button>Billing</button>
+    </div>
+    <p style="margin-top:0.5rem; font-size:0.85rem; color:#6b7280;">
+      These buttons use flex-wrap: nowrap, so they overflow horizontally on narrow screens instead of wrapping.
+    </p>
+  </div>
+
+  <script>
+    // Viewport info updater
+    function updateViewport() {
+      document.getElementById('vw').textContent = window.innerWidth;
+      document.getElementById('vh').textContent = window.innerHeight;
+      document.getElementById('dpr').textContent = window.devicePixelRatio;
+    }
+    updateViewport();
+    window.addEventListener('resize', updateViewport);
+
+    // Hamburger toggle
+    document.getElementById('hamburger-btn').addEventListener('click', () => {
+      const menu = document.getElementById('mobile-menu');
+      menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    });
+  </script>
+</body>
+</html>

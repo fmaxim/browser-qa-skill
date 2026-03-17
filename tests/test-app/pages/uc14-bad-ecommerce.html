@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UC-14: Bad E-Commerce Design</title>
+  <style>
+    /* INTENTIONALLY BAD DESIGN - testing visual quality detection */
+    body { font-family: 'Comic Sans MS', 'Papyrus', cursive; /* Bad font choice */ background: #ffff00; /* Neon yellow bg */ color: #ff0000; /* Red text on yellow */ margin: 0; padding: 10px; }
+    h1 { font-size: 40px; text-decoration: underline blink; color: #0000ff; text-align: center; text-shadow: 2px 2px #ff00ff; }
+    /* Inconsistent spacing everywhere */
+    .product-grid { display: flex; gap: 5px; flex-wrap: wrap; margin: 3px 0; }
+    .product-card { border: 3px dashed #ff00ff; background: #00ffff; padding: 5px; width: 180px; margin: 2px; }
+    .product-card img { width: 100%; }
+    .product-card .name { font-size: 22px; font-weight: 900; color: #008000; text-transform: uppercase; }
+    .product-card .price { font-size: 14px; color: #800080; font-style: italic; }
+    /* Bad button */
+    .buy-btn { background: lime; color: white; border: 5px outset #888; padding: 3px 8px; font-size: 11px;
+      cursor: default; /* Not even pointer cursor */ font-family: 'Times New Roman'; }
+    /* Clashing header */
+    .header { background: linear-gradient(#ff0000, #0000ff, #00ff00); padding: 5px 10px; color: white; display: flex; justify-content: space-between; align-items: center; }
+    .nav a { color: yellow; font-size: 20px; margin: 0 3px; text-decoration: none; }
+    .nav a:hover { color: lime; }
+    /* Bad footer */
+    .footer { background: #333; color: #666; /* Low contrast */ padding: 5px; font-size: 9px; margin-top: 10px; text-align: center; }
+    /* Misaligned elements */
+    .banner { background: #ff69b4; color: #ffff00; padding: 2px; font-size: 28px; text-align: left; font-weight: 100; /* Too thin */ }
+    /* Inconsistent card styles */
+    .product-card:nth-child(2) { background: #ffe0e0; border: 1px solid #ccc; }
+    .product-card:nth-child(3) { background: white; border: none; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+    /* Terrible spacing */
+    .sidebar { float: left; width: 120px; background: #333; color: #0f0; padding: 3px; font-family: monospace; font-size: 10px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span style="font-size:30px; font-weight:100;">ShopBad.com</span>
+    <div class="nav">
+      <a href="#">HOME</a>
+      <a href="#">PRODUCTS</a>
+      <a href="#">ABOUT</a>
+      <a href="#" style="color:red;">SALE!!!</a>
+    </div>
+  </div>
+
+  <div class="banner">
+    *** MEGA SALE - BUY NOW - LIMITED TIME ***
+    <marquee style="font-size:14px; color:red;">FREE SHIPPING ON ALL ORDERS OVER $1!!!</marquee>
+  </div>
+
+  <div style="display:flex;">
+    <div class="sidebar">
+      <b>Categories</b><br>
+      <a href="#" style="color:#0f0;">Electronics</a><br>
+      <a href="#" style="color:#0f0;">Clothing</a><br>
+      <a href="#" style="color:#0f0;">Books</a><br>
+      <a href="#" style="color:#ff0;">DEALS</a><br>
+      <hr style="border-color:#555;">
+      <span style="font-size:8px;">Copyright 2020</span>
+    </div>
+
+    <div style="flex:1; padding:5px;">
+      <h1>Our Products</h1>
+      <div class="product-grid">
+        <div class="product-card">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='150' fill='%23ccc'%3E%3Crect width='200' height='150'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23999'%3EProduct%3C/text%3E%3C/svg%3E" alt="">
+          <div class="name">Widget Pro</div>
+          <div class="price">was $99 NOW $29.99!!!</div>
+          <button class="buy-btn">ADD TO CART</button>
+        </div>
+        <div class="product-card">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' fill='%23aaa'%3E%3Crect width='200' height='200'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23666'%3EProduct%3C/text%3E%3C/svg%3E" alt="">
+          <div class="name" style="font-size:12px; color:red;">GADGET X</div>
+          <div class="price" style="font-size:24px;">$49.99</div>
+          <button class="buy-btn" style="background:red; font-size:18px;">BUY!!!</button>
+        </div>
+        <div class="product-card">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='250' fill='%23ddd'%3E%3Crect width='150' height='250'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%23888'%3EProduct%3C/text%3E%3C/svg%3E" alt="">
+          <div class="name">Thing</div>
+          <div class="price">$15</div>
+          <button class="buy-btn" style="background:#333; color:#333;">Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    privacy | terms | contact | Copyright 2020 ShopBad.com
+  </div>
+
+  <p style="margin-top:1rem;"><a href="/" style="color:#000;">Back to index</a></p>
+</body>
+</html>

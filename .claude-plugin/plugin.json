@@ -1,0 +1,24 @@
+{
+  "name": "browser-qa",
+  "description": "Universal browser QA testing — JS errors, network, accessibility, security, performance, visual quality, interactive testing, codebase-driven test generation, and coverage tracking in one pass. Framework-agnostic: works with React, Next.js, Astro, Vue, Svelte, plain HTML, or any web app.",
+  "version": "2.0.0",
+  "author": {
+    "name": "Maxim Fainshtein"
+  },
+  "repository": "https://github.com/fmaxim/browser-qa",
+  "license": "MIT",
+  "keywords": [
+    "browser-testing",
+    "qa",
+    "accessibility",
+    "security",
+    "performance",
+    "playwright",
+    "lighthouse",
+    "axe-core",
+    "web-vitals",
+    "test-generation",
+    "coverage",
+    "framework-agnostic"
+  ]
+}

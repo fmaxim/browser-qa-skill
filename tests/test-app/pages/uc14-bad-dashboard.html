@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UC-14: Bad Dashboard Design</title>
+  <style>
+    /* INTENTIONALLY BAD DASHBOARD DESIGN */
+    body { font-family: 'Courier New', monospace; /* Monospace for a dashboard? */ background: #1a1a1a; color: #888; margin: 0; }
+    /* Header too tall, wastes space */
+    .header { background: linear-gradient(135deg, #ff6b6b, #ffd93d, #6bcb77, #4d96ff);
+      height: 120px; /* Way too tall */ display: flex; align-items: center; padding: 0 20px; }
+    .header h1 { color: white; font-size: 16px; /* Too small for header */ text-shadow: none; }
+    /* Sidebar issues */
+    .layout { display: flex; }
+    .sidebar { width: 300px; /* Too wide */ background: #0d0d0d; padding: 10px; min-height: 100vh; }
+    .sidebar a { display: block; color: #444; /* Too dark on dark bg */ padding: 15px 10px;
+      text-decoration: underline; /* Underlined nav links look dated */ font-size: 13px;
+      border-bottom: 1px solid #1a1a1a; }
+    .sidebar a:hover { color: #555; /* Barely visible hover state */ }
+    .sidebar a.active { color: #ff0000; /* Jarring red for active state */ background: #111; }
+    /* Main content */
+    .main { flex: 1; padding: 10px; }
+    /* Metric cards - inconsistent */
+    .metrics { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .metric-card { padding: 15px; border-radius: 3px; /* Inconsistent radius */ flex: 1; min-width: 150px; }
+    .metric-card:nth-child(1) { background: #2a2a2a; border-left: 4px solid red; }
+    .metric-card:nth-child(2) { background: #333; border: 2px dashed green; border-radius: 15px; }
+    .metric-card:nth-child(3) { background: #1f1f1f; box-shadow: 0 0 10px cyan; border-radius: 0; }
+    .metric-card:nth-child(4) { background: #2d2d2d; border-top: 3px solid #ffd93d; border-radius: 8px; }
+    .metric-label { font-size: 10px; /* Too small */ color: #555; text-transform: uppercase; letter-spacing: 3px; }
+    .metric-value { font-size: 28px; color: #ccc; margin: 5px 0; }
+    .metric-change { font-size: 11px; }
+    /* Table - hard to read */
+    .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+    .data-table th { background: #0d0d0d; color: #444; padding: 8px; text-align: left;
+      border: 1px solid #222; font-weight: normal; /* Hard to distinguish header */ }
+    .data-table td { padding: 6px 8px; border: 1px solid #222; color: #666; }
+    .data-table tr:nth-child(even) { background: #1f1f1f; }
+    .data-table tr:hover { background: #222; } /* Barely visible hover */
+    /* Chart placeholder */
+    .chart-area { background: #2a2a2a; height: 200px; border-radius: 0; margin: 10px 0;
+      display: flex; align-items: center; justify-content: center; color: #333;
+      border: 1px solid #333; }
+    /* Status badges - inconsistent */
+    .badge { display: inline-block; padding: 2px 6px; border-radius: 2px; font-size: 10px; }
+    .badge-ok { background: green; color: green; /* Same color = invisible text */ }
+    .badge-warn { background: #ffd93d; color: #ffd93d; }
+    .badge-err { background: #ff4444; color: white; font-size: 14px; font-weight: bold; /* Inconsistent */ }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>ANALYTICS DASHBOARD v2.1</h1>
+    <div style="margin-left:auto; color:white; font-size:11px;">
+      Last updated: 2 hours ago <!-- Stale data indicator -->
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="sidebar">
+      <a href="#" class="active">Dashboard</a>
+      <a href="#">Analytics</a>
+      <a href="#">Users</a>
+      <a href="#">Reports</a>
+      <a href="#">Settings</a>
+      <a href="#">Billing</a>
+      <a href="#">Help</a>
+      <a href="#">Admin</a>
+      <a href="#">Logs</a>
+      <a href="#">API Keys</a>
+      <!-- Too many items, no grouping -->
+    </div>
+
+    <div class="main">
+      <div class="metrics">
+        <div class="metric-card">
+          <div class="metric-label">Revenue</div>
+          <div class="metric-value">$12,345</div>
+          <div class="metric-change" style="color:green;">+12.5%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Users</div>
+          <div class="metric-value" style="font-size:18px; color:#ff0;">8,421</div>
+          <div class="metric-change" style="color:red;">-3.2%</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label" style="font-size:14px; letter-spacing:0;">Conv Rate</div>
+          <div class="metric-value" style="font-family:Arial;">3.7%</div>
+          <div class="metric-change">&#8593; 0.4pp</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Bounce</div>
+          <div class="metric-value">67%</div>
+          <div class="metric-change" style="color:cyan;">stable</div>
+        </div>
+      </div>
+
+      <div class="chart-area">
+        [Chart would go here - but it's just an empty placeholder]
+      </div>
+
+      <h2 style="color:#555; font-size:13px; margin:10px 0 5px;">Recent Activity</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date</th><th>User</th><th>Action</th><th>Status</th><th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>2026-03-17</td><td>john@ex.com</td><td>Purchase</td><td><span class="badge badge-ok">OK</span></td><td>$129</td></tr>
+          <tr><td>2026-03-17</td><td>jane@ex.com</td><td>Signup</td><td><span class="badge badge-ok">OK</span></td><td>-</td></tr>
+          <tr><td>2026-03-16</td><td>bob@ex.com</td><td>Refund</td><td><span class="badge badge-warn">WARN</span></td><td>-$49</td></tr>
+          <tr><td>2026-03-16</td><td>alice@ex.com</td><td>Error</td><td><span class="badge badge-err">FAILED</span></td><td>$0</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <p style="padding:1rem;"><a href="/" style="color:#555;">Back to index</a></p>
+</body>
+</html>

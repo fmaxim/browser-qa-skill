@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UC-2: JavaScript Error Detection</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; padding: 2rem; }
+    h1 { margin-bottom: 1rem; }
+    .test-section { margin: 2rem 0; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; }
+    .test-section h2 { margin-bottom: 0.5rem; font-size: 1rem; color: #6b7280; }
+    .btn { background: #2563eb; color: white; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; margin: 0.25rem; }
+    .error-log { background: #1f2937; color: #f87171; padding: 1rem; border-radius: 4px; font-family: monospace; font-size: 0.85rem; margin-top: 0.5rem; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>UC-2: JavaScript Error Detection</h1>
+  <p><a href="/">Back to index</a></p>
+
+  <div class="test-section">
+    <h2>Bug 1: TypeError on page load (accessing undefined property)</h2>
+    <p>This error fires automatically when the page loads.</p>
+    <div class="error-log" id="error1-log">Waiting for error...</div>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 2: Unhandled Promise Rejection</h2>
+    <button class="btn" id="btn-promise">Trigger Fetch to Non-Existent API</button>
+    <div class="error-log" id="error2-log">Click button to trigger</div>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 3: ReferenceError in click handler</h2>
+    <button class="btn" id="btn-ref-error">Click for ReferenceError</button>
+    <div class="error-log" id="error3-log">Click button to trigger</div>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 4: Silent error (caught but logged to console.error)</h2>
+    <button class="btn" id="btn-silent">Trigger Silent Error</button>
+    <div class="error-log" id="error4-log">Click button to trigger</div>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 5: Deprecated API warning</h2>
+    <p>This warning fires automatically on page load.</p>
+    <div class="error-log" id="error5-log">Waiting for warning...</div>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 6: Memory leak (event listener never removed)</h2>
+    <button class="btn" id="btn-leak">Add 100 Event Listeners (Leak)</button>
+    <div class="error-log" id="error6-log">Click to create memory leak</div>
+  </div>
+
+  <script>
+    // BUG 1: TypeError on page load
+    try {
+      const config = undefined;
+      const value = config.settings.theme; // TypeError: Cannot read properties of undefined
+    } catch (e) {
+      // This gets caught but we also throw an uncaught one
+    }
+    // Uncaught version:
+    setTimeout(() => {
+      const userData = null;
+      const name = userData.profile.name; // Uncaught TypeError
+    }, 100);
+
+    // BUG 2: Unhandled Promise Rejection
+    document.getElementById('btn-promise').addEventListener('click', () => {
+      fetch('/api/nonexistent-endpoint')
+        .then(res => res.json()) // This will fail on the malformed/missing response
+        .then(data => {
+          document.getElementById('error2-log').textContent = 'Success: ' + JSON.stringify(data);
+        });
+      // Intentionally NO .catch() — unhandled promise rejection
+      document.getElementById('error2-log').textContent = 'Fetching...';
+    });
+
+    // BUG 3: ReferenceError
+    document.getElementById('btn-ref-error').addEventListener('click', () => {
+      document.getElementById('error3-log').textContent = 'Calling undeclaredFunction()...';
+      undeclaredFunction(); // ReferenceError: undeclaredFunction is not defined
+    });
+
+    // BUG 4: Silent error (caught but logged)
+    document.getElementById('btn-silent').addEventListener('click', () => {
+      try {
+        JSON.parse('{"invalid json}');
+      } catch (e) {
+        console.error('[APP_ERROR] Failed to parse server response:', e.message);
+        document.getElementById('error4-log').textContent = 'Error caught and logged to console.error';
+      }
+    });
+
+    // BUG 5: Deprecated API warning on load
+    console.warn('[DEPRECATED] The `document.createEvent` API is deprecated. Use the Event constructor instead.');
+    console.warn('[DEPRECATED] Feature "legacy-mode" will be removed in v3.0. Migrate to "modern-mode".');
+    document.getElementById('error5-log').textContent = 'Deprecation warnings logged to console.warn';
+
+    // BUG 6: Memory leak - event listeners never removed
+    document.getElementById('btn-leak').addEventListener('click', () => {
+      for (let i = 0; i < 100; i++) {
+        window.addEventListener('resize', function leakyHandler() {
+          // This handler is never removed
+          const data = new Array(1000).fill('leak-' + i);
+        });
+      }
+      document.getElementById('error6-log').textContent = 'Added 100 resize handlers that will never be removed. Memory leak active.';
+      console.warn('[PERFORMANCE] Potential memory leak: 100 event listeners added without cleanup');
+    });
+  </script>
+</body>
+</html>

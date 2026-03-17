@@ -1,0 +1,155 @@
+{
+  "skill_name": "browser-qa",
+  "version": "2.0.0",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Check http://localhost:3099/js-errors for any JavaScript issues. Tell me what errors are on this page.",
+      "expected_output": "Should find: TypeError (uncaught), deprecation warnings. Should use the skill's Playwright script to detect console errors and page errors systematically.",
+      "assertions": [
+        {
+          "text": "Detects the uncaught TypeError about null properties",
+          "type": "output_contains",
+          "check": "TypeError"
+        },
+        {
+          "text": "Detects deprecation warnings",
+          "type": "output_contains",
+          "check": "deprecated"
+        },
+        {
+          "text": "Uses structured approach (not just opening URL in browser)",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Run a full QA check on http://localhost:3099/security and tell me about any security issues you find.",
+      "expected_output": "Should find: secrets in HTML comments, XSS risk, open redirect, permissive CORS, missing CSP, eval() on URL params.",
+      "assertions": [
+        {
+          "text": "Detects secrets in HTML comments (API_KEY or DB_PASSWORD)",
+          "type": "output_contains",
+          "check": "secret"
+        },
+        {
+          "text": "Detects CORS issue",
+          "type": "output_contains",
+          "check": "CORS"
+        },
+        {
+          "text": "Detects missing Content-Security-Policy",
+          "type": "output_contains",
+          "check": "Content-Security-Policy"
+        },
+        {
+          "text": "Identifies at least 3 distinct security issues",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Test http://localhost:3099/bad-ecommerce for any design, accessibility, or usability problems. This is an e-commerce page — tell me what's wrong with it.",
+      "expected_output": "Should find: unprofessional fonts (Comic Sans), invisible button text, low contrast footer, too many font families, small font sizes, clashing colors.",
+      "assertions": [
+        {
+          "text": "Identifies font problems (Comic Sans or unprofessional)",
+          "type": "output_contains_any",
+          "check": ["Comic Sans", "font", "unprofessional"]
+        },
+        {
+          "text": "Identifies invisible or low-contrast text",
+          "type": "output_contains_any",
+          "check": ["invisible", "contrast", "same color"]
+        },
+        {
+          "text": "Provides actionable recommendations (not just listing issues)",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "/browser-qa http://localhost:3099 --quick",
+      "expected_output": "Should run Phase 1 only (agent-browser smoke test). Should complete quickly and report pass/fail with error count.",
+      "assertions": [
+        {
+          "text": "Uses agent-browser for quick smoke test",
+          "type": "output_contains_any",
+          "check": ["agent-browser", "smoke", "Phase 1"]
+        },
+        {
+          "text": "Reports pass/fail status",
+          "type": "output_contains_any",
+          "check": ["PASS", "FAIL", "pass", "fail"]
+        },
+        {
+          "text": "Does NOT run Lighthouse or axe-core (quick mode)",
+          "type": "qualitative"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Generate tests for the codebase in the current directory. I want to know what routes exist and get automated tests for them.",
+      "expected_output": "Should scan for routes using file-based routing, config-based routing, or link crawling. Should generate Playwright test files and report coverage.",
+      "assertions": [
+        {
+          "text": "Discovers routes from the codebase",
+          "type": "output_contains_any",
+          "check": ["route", "page", "discovered", "found"]
+        },
+        {
+          "text": "Generates test files",
+          "type": "output_contains_any",
+          "check": ["test", "generated", "playwright", "spec"]
+        },
+        {
+          "text": "Shows coverage metrics",
+          "type": "output_contains_any",
+          "check": ["coverage", "covered", "%"]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "/browser-qa http://localhost:3099 --responsive",
+      "expected_output": "Should run QA at multiple viewports (mobile, tablet, desktop). Should check for horizontal overflow, touch targets, font sizes at each viewport.",
+      "assertions": [
+        {
+          "text": "Tests at multiple viewports",
+          "type": "output_contains_any",
+          "check": ["375", "768", "1440", "mobile", "tablet", "desktop", "viewport"]
+        },
+        {
+          "text": "Checks responsive-specific issues",
+          "type": "output_contains_any",
+          "check": ["overflow", "touch target", "font size", "responsive"]
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "/browser-qa http://localhost:3099/js-errors --from-verify",
+      "expected_output": "Should run lightweight Phase 1+2, output structured JSON with pass/fail, errors array, and duration_ms.",
+      "assertions": [
+        {
+          "text": "Returns structured JSON output",
+          "type": "output_contains_any",
+          "check": ["pass", "errors", "duration"]
+        },
+        {
+          "text": "Identifies errors on the page",
+          "type": "output_contains",
+          "check": "TypeError"
+        },
+        {
+          "text": "Completes quickly (lightweight mode)",
+          "type": "qualitative"
+        }
+      ]
+    }
+  ]
+}

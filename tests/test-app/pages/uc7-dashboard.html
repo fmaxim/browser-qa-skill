@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UC-7: Dashboard — Browser Auto Agents Test</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      color: #1a1a2e;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      flex-shrink: 0;
+      background: #1a1a2e;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 0;
+      min-height: 100vh;
+    }
+    .sidebar .brand {
+      padding: 0 20px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sidebar .brand .logo {
+      width: 36px;
+      height: 36px;
+      background: #4f46e5;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .sidebar .brand span {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .nav {
+      padding: 16px 12px;
+      flex: 1;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #94a3b8;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s, color 0.15s;
+      margin-bottom: 2px;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.06); color: #e2e8f0; }
+    .nav-item.active { background: rgba(79,70,229,0.25); color: #a5b4fc; }
+    .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .btn-logout {
+      width: 100%;
+      padding: 9px;
+      background: rgba(239,68,68,0.15);
+      color: #f87171;
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-logout:hover { background: rgba(239,68,68,0.25); }
+
+    /* Main content */
+    .main {
+      flex: 1;
+      padding: 32px;
+      overflow-y: auto;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .page-header h1 { font-size: 22px; font-weight: 700; }
+    .page-header p { font-size: 13px; color: #6c757d; margin-top: 4px; }
+
+    .back-link {
+      font-size: 12px;
+      color: #6c757d;
+      text-decoration: none;
+    }
+    .back-link:hover { color: #343a40; text-decoration: underline; }
+
+    /* Cards grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      padding: 24px;
+    }
+    .card h3 {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6c757d;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card h3 .badge {
+      font-size: 10px;
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+      border-radius: 4px;
+      padding: 1px 5px;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 600;
+    }
+
+    /* User info card */
+    .user-info-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .avatar {
+      width: 52px;
+      height: 52px;
+      background: #e0e7ff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 700;
+      color: #4f46e5;
+      flex-shrink: 0;
+    }
+    .user-name { font-size: 16px; font-weight: 600; }
+    .user-email { font-size: 13px; color: #6c757d; margin-top: 2px; }
+
+    .info-table { width: 100%; border-collapse: collapse; }
+    .info-table td {
+      padding: 8px 0;
+      font-size: 13px;
+      border-bottom: 1px solid #f1f3f5;
+      vertical-align: top;
+    }
+    .info-table td:first-child { color: #6c757d; width: 110px; }
+    .info-table td:last-child { color: #1a1a2e; font-weight: 500; word-break: break-all; }
+    .info-table tr:last-child td { border-bottom: none; }
+
+    /* Auth status */
+    .auth-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .auth-status.authenticated { background: #dcfce7; color: #15803d; }
+    .auth-status.unauthenticated { background: #fef2f2; color: #b91c1c; }
+    .auth-status .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* Token leak card */
+    .token-display {
+      background: #1e293b;
+      color: #94a3b8;
+      border-radius: 8px;
+      padding: 14px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      word-break: break-all;
+      line-height: 1.6;
+      margin-top: 4px;
+    }
+    .token-display .label { color: #64748b; font-size: 11px; margin-bottom: 4px; }
+    .token-value { color: #f97316; font-weight: 600; }
+
+    /* Bug annotation */
+    .bug-note {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 6px;
+      font-size: 11px;
+      color: #856404;
+      line-height: 1.5;
+    }
+
+    /* Loading skeleton */
+    .skeleton {
+      background: linear-gradient(90deg, #f1f3f5 25%, #e9ecef 50%, #f1f3f5 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+      border-radius: 4px;
+      height: 14px;
+      margin-bottom: 8px;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .raw-response {
+      background: #1e293b;
+      color: #7dd3fc;
+      border-radius: 8px;
+      padding: 14px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 160px;
+      overflow-y: auto;
+      margin-top: 8px;
+    }
+
+    .full-width { grid-column: 1 / -1; }
+
+    /* Stat cards */
+    .stat { text-align: center; }
+    .stat .value { font-size: 28px; font-weight: 700; color: #4f46e5; }
+    .stat .label { font-size: 12px; color: #6c757d; margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">A</div>
+      <span>AutoTest App</span>
+    </div>
+
+    <nav class="nav">
+      <a href="#" class="nav-item active">
+        <span class="icon">⊞</span> Dashboard
+      </a>
+      <a href="#" class="nav-item">
+        <span class="icon">👤</span> Profile
+      </a>
+      <a href="#" class="nav-item">
+        <span class="icon">⚙</span> Settings
+      </a>
+      <a href="#" class="nav-item">
+        <span class="icon">📋</span> Reports
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <!-- BUG (UC-7): Logout only clears the cookie client-side; no server-side
+           session invalidation. The session token remains valid server-side. -->
+      <button class="btn-logout" id="logoutBtn">Sign out</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <h1>Dashboard</h1>
+        <p>Welcome back. Here is your account overview.</p>
+      </div>
+      <a href="/" class="back-link">← Back to index</a>
+    </div>
+
+    <div class="grid">
+
+      <!-- User info card -->
+      <div class="card" id="userCard">
+        <h3>
+          User Info
+          <span class="badge">BUG: No auth check</span>
+        </h3>
+
+        <div class="user-info-row">
+          <div class="avatar" id="avatarInitial">?</div>
+          <div>
+            <div class="user-name" id="displayName">Loading…</div>
+            <div class="user-email" id="displayEmail">—</div>
+          </div>
+        </div>
+
+        <table class="info-table">
+          <tr>
+            <td>Role</td>
+            <td id="displayRole"><div class="skeleton" style="width:60px"></div></td>
+          </tr>
+          <tr>
+            <td>User ID</td>
+            <td id="displayId"><div class="skeleton" style="width:100px"></div></td>
+          </tr>
+          <tr>
+            <td>Auth status</td>
+            <td id="displayAuthStatus"><div class="skeleton" style="width:90px"></div></td>
+          </tr>
+          <tr>
+            <td>Session cookie</td>
+            <td id="displayCookie"><div class="skeleton" style="width:80px"></div></td>
+          </tr>
+        </table>
+
+        <div class="bug-note">
+          <strong>Bug (UC-7):</strong> This page calls <code>/api/user</code> and renders data
+          without verifying the session server-side. Any visitor sees the data, authenticated or not.
+        </div>
+      </div>
+
+      <!-- Token leak card -->
+      <div class="card" id="tokenCard">
+        <h3>
+          Session Token
+          <span class="badge">BUG: Token in URL</span>
+        </h3>
+
+        <div class="token-display">
+          <div class="label">Source: URL query parameter <code>?token=</code></div>
+          <div class="token-value" id="tokenValue">—</div>
+        </div>
+
+        <div class="bug-note">
+          <strong>Bug (UC-7):</strong> The session token is read directly from the URL
+          (<code>location.search</code>) and displayed here. It is also stored in browser
+          history and may appear in server access logs via the Referer header.
+        </div>
+      </div>
+
+      <!-- Raw API response -->
+      <div class="card full-width">
+        <h3>Raw API Response — <code>/api/user</code></h3>
+        <pre class="raw-response" id="rawResponse">Loading…</pre>
+        <div class="bug-note" style="margin-top:10px">
+          <strong>Bug (UC-7):</strong> The full API response including internal fields
+          is exposed on the client. No sensitive field stripping occurs.
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const DEBUG = localStorage.getItem('debug') === 'true';
+    const log = DEBUG ? (...args) => console.log('[DEBUG:uc7-dashboard]', ...args) : () => {};
+
+    // BUG (UC-7): Token is read directly from the URL query string and displayed.
+    const params = new URLSearchParams(location.search);
+    const urlToken = params.get('token');
+
+    log('page load', { urlToken: urlToken ? '[present]' : '[absent]' });
+
+    document.getElementById('tokenValue').textContent = urlToken || '(no token in URL — try navigating from the login page)';
+
+    async function loadUserData() {
+      log('fetching /api/user');
+      try {
+        // BUG (UC-7): No auth check before calling the API.
+        // The page renders whatever the server returns regardless of session state.
+        const res = await fetch('http://localhost:3099/api/user', {
+          credentials: 'include',
+          headers: urlToken ? { 'X-Token': urlToken } : {}
+        });
+
+        const data = await res.json();
+        log('api/user response', { status: res.status, data });
+
+        // Render raw response
+        document.getElementById('rawResponse').textContent = JSON.stringify(data, null, 2);
+
+        const user = data.user || data;
+
+        // Avatar initial
+        const name = user.name || user.email || 'Unknown';
+        document.getElementById('avatarInitial').textContent = name.charAt(0).toUpperCase();
+        document.getElementById('displayName').textContent = user.name || 'Unknown User';
+        document.getElementById('displayEmail').textContent = user.email || '—';
+        document.getElementById('displayRole').textContent = user.role || 'user';
+        document.getElementById('displayId').textContent = user.id || user.userId || '—';
+
+        // Auth status — BUG: determined client-side only
+        const hasCookie = document.cookie.includes('session');
+        const authLabel = hasCookie ? 'Authenticated' : 'No session cookie';
+        const authClass = hasCookie ? 'authenticated' : 'unauthenticated';
+        document.getElementById('displayAuthStatus').innerHTML =
+          `<span class="auth-status ${authClass}"><span class="dot"></span>${authLabel}</span>`;
+
+        document.getElementById('displayCookie').textContent =
+          document.cookie || '(no cookies set)';
+
+      } catch (err) {
+        log('fetch error', err);
+        document.getElementById('rawResponse').textContent =
+          `Error: ${err.message}\n\nMake sure the test server is running on port 3099.`;
+        document.getElementById('displayName').textContent = 'Server unreachable';
+        document.getElementById('displayEmail').textContent = '—';
+        document.getElementById('displayRole').textContent = '—';
+        document.getElementById('displayId').textContent = '—';
+        document.getElementById('displayAuthStatus').innerHTML =
+          '<span class="auth-status unauthenticated"><span class="dot"></span>Unknown</span>';
+        document.getElementById('displayCookie').textContent = document.cookie || '(none)';
+        document.getElementById('tokenValue').textContent = urlToken || '(none)';
+      }
+    }
+
+    // BUG (UC-7): No authentication check here — page loads and fetches data unconditionally.
+    loadUserData();
+
+    // BUG (UC-7): Logout only clears the session cookie client-side.
+    // The session token remains valid on the server — it is never invalidated.
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      log('logout clicked — clearing cookie client-side only');
+      document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      window.location.href = '/pages/uc7-login.html';
+    });
+  </script>
+
+</body>
+</html>

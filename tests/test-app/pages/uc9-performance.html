@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UC-9: Performance & Web Vitals</title>
+  <!-- BUG 1: Render-blocking CSS with 3s delay from server -->
+  <link rel="stylesheet" href="/slow-styles.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; padding: 2rem; }
+    h1 { margin-bottom: 1rem; }
+    .test-section { margin: 2rem 0; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; }
+    .test-section h2 { margin-bottom: 0.5rem; font-size: 1rem; color: #6b7280; }
+    .metrics { background: #f0fdf4; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; font-family: monospace; }
+    .btn { background: #2563eb; color: white; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>UC-9: Performance & Web Vitals</h1>
+  <p><a href="/">Back to index</a></p>
+
+  <div class="metrics" id="perf-metrics">
+    <strong>Performance Metrics</strong><br>
+    <span id="metric-fcp">FCP: measuring...</span><br>
+    <span id="metric-lcp">LCP: measuring...</span><br>
+    <span id="metric-cls">CLS: measuring...</span><br>
+    <span id="metric-tbt">TBT: N/A (needs Long Task API)</span>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 1: Render-blocking CSS (3s delay)</h2>
+    <p>The /slow-styles.css file takes 3 seconds to load, blocking initial render.</p>
+    <div class="delayed-section">This section is styled by the slow CSS.</div>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 2: Large unoptimized inline SVG</h2>
+    <svg width="800" height="400" xmlns="http://www.w3.org/2000/svg" style="background:#f3f4f6; border-radius:8px;">
+      <script>/* Generate many circles */</script>
+    </svg>
+    <script>
+      const svg = document.querySelector('svg');
+      for (let i = 0; i < 500; i++) {
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', Math.random() * 800);
+        circle.setAttribute('cy', Math.random() * 400);
+        circle.setAttribute('r', Math.random() * 20 + 2);
+        circle.setAttribute('fill', `hsl(${Math.random()*360},70%,60%)`);
+        circle.setAttribute('opacity', '0.5');
+        svg.appendChild(circle);
+      }
+    </script>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 3: Layout shift (CLS violation)</h2>
+    <div id="shifting-box" style="background:#dbeafe; padding:1rem; border-radius:8px; height:50px; transition:none;">
+      This box will suddenly grow from 50px to 300px height after 2 seconds, causing a layout shift.
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 4: Long synchronous task (blocks main thread)</h2>
+    <button class="btn" id="btn-long-task">Process Data (500ms+ block)</button>
+    <p id="long-task-result" style="margin-top:0.5rem;">Click to trigger blocking computation.</p>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 5: Images without lazy loading (below fold)</h2>
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1rem;">
+      <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' fill='%23818cf8'%3E%3Crect width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white'%3ENo lazy%3C/text%3E%3C/svg%3E" alt="Image 1" width="400" height="300">
+      <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' fill='%2334d399'%3E%3Crect width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white'%3ENo lazy%3C/text%3E%3C/svg%3E" alt="Image 2" width="400" height="300">
+      <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' fill='%23fb923c'%3E%3Crect width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white'%3ENo lazy%3C/text%3E%3C/svg%3E" alt="Image 3" width="400" height="300">
+    </div>
+    <p style="color:#6b7280; margin-top:0.5rem;">These below-fold images lack loading="lazy" attribute.</p>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 6: Uncompressed heavy text content</h2>
+    <div style="max-height:200px; overflow-y:auto; font-size:0.85rem; color:#6b7280; line-height:1.6;" id="heavy-text"></div>
+  </div>
+
+  <script>
+    // Bug 3: Layout shift after 2s
+    setTimeout(() => {
+      document.getElementById('shifting-box').style.height = '300px';
+      document.getElementById('shifting-box').innerHTML += '<br><strong style="color:red;">Layout shifted!</strong>';
+    }, 2000);
+
+    // Bug 4: Long synchronous task
+    document.getElementById('btn-long-task').addEventListener('click', () => {
+      const start = performance.now();
+      // Blocking loop
+      let result = 0;
+      for (let i = 0; i < 50000000; i++) {
+        result += Math.sqrt(i);
+      }
+      const duration = Math.round(performance.now() - start);
+      document.getElementById('long-task-result').textContent =
+        `Blocked main thread for ${duration}ms. Result: ${result.toFixed(0)}`;
+    });
+
+    // Bug 6: Generate heavy text
+    const lorem = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ';
+    document.getElementById('heavy-text').textContent = lorem.repeat(200);
+
+    // Performance metrics
+    if (window.PerformanceObserver) {
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (entry.name === 'first-contentful-paint') {
+            document.getElementById('metric-fcp').textContent = `FCP: ${Math.round(entry.startTime)}ms`;
+          }
+        }
+      }).observe({ type: 'paint', buffered: true });
+
+      new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        const last = entries[entries.length - 1];
+        document.getElementById('metric-lcp').textContent = `LCP: ${Math.round(last.startTime)}ms`;
+      }).observe({ type: 'largest-contentful-paint', buffered: true });
+
+      let clsValue = 0;
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (!entry.hadRecentInput) clsValue += entry.value;
+        }
+        document.getElementById('metric-cls').textContent = `CLS: ${clsValue.toFixed(4)}`;
+      }).observe({ type: 'layout-shift', buffered: true });
+    }
+  </script>
+</body>
+</html>

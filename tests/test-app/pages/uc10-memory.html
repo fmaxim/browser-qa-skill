@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UC-10: CPU & Memory Performance</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; padding: 2rem; }
+    h1 { margin-bottom: 1rem; }
+    .test-section { margin: 2rem 0; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; }
+    .test-section h2 { margin-bottom: 0.5rem; font-size: 1rem; color: #6b7280; }
+    .monitor { background: #1f2937; color: #4ade80; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.85rem; margin-bottom: 2rem; }
+    .btn { background: #dc2626; color: white; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; margin: 0.25rem; }
+    .btn-safe { background: #16a34a; }
+  </style>
+</head>
+<body>
+  <h1>UC-10: CPU & Memory Performance</h1>
+  <p><a href="/">Back to index</a></p>
+
+  <div class="monitor" id="resource-monitor">
+    <strong>Resource Monitor</strong><br>
+    <span id="dom-count">DOM Nodes: counting...</span><br>
+    <span id="interval-count">Active Intervals: 0</span><br>
+    <span id="memory-est">Heap: checking...</span><br>
+    <span id="leak-size">Leak Array Size: 0</span>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 1: Memory leak - growing array (setInterval, never cleared)</h2>
+    <button class="btn" id="btn-leak-start">Start Memory Leak</button>
+    <button class="btn btn-safe" id="btn-leak-stop">Stop Leak</button>
+    <p style="margin-top:0.5rem;" id="leak-status">Not started</p>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 2: CPU-intensive animation (heavy requestAnimationFrame)</h2>
+    <button class="btn" id="btn-cpu-start">Start CPU Hog</button>
+    <button class="btn btn-safe" id="btn-cpu-stop">Stop</button>
+    <canvas id="cpu-canvas" width="400" height="100" style="border:1px solid #e5e7eb; margin-top:0.5rem;"></canvas>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 3: DOM bloat - create 1000 elements</h2>
+    <button class="btn" id="btn-dom-bloat">Create 1000 DOM Nodes</button>
+    <div id="dom-container" style="max-height:100px; overflow-y:auto; margin-top:0.5rem;"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 4: Interval leak on page load (never cleared)</h2>
+    <p>A setInterval runs every 200ms logging to console. It was never cleared.</p>
+    <p id="interval-log" style="font-family:monospace; color:#6b7280; margin-top:0.5rem;">Ticks: 0</p>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 5: Large closure preventing garbage collection</h2>
+    <button class="btn" id="btn-closure">Create 10MB Closure</button>
+    <p id="closure-status" style="margin-top:0.5rem;">Not created</p>
+  </div>
+
+  <script>
+    // Track intervals
+    let intervalIds = [];
+    let leakArray = [];
+    let leakInterval = null;
+    let cpuAnimId = null;
+
+    // Bug 1: Memory leak
+    document.getElementById('btn-leak-start').addEventListener('click', () => {
+      leakInterval = setInterval(() => {
+        leakArray.push(new Array(10000).fill(Math.random()));
+      }, 100);
+      intervalIds.push(leakInterval);
+      document.getElementById('leak-status').textContent = 'Leak active - array growing every 100ms';
+    });
+    document.getElementById('btn-leak-stop').addEventListener('click', () => {
+      if (leakInterval) clearInterval(leakInterval);
+      document.getElementById('leak-status').textContent = 'Leak stopped (but data not freed)';
+    });
+
+    // Bug 2: CPU hog
+    document.getElementById('btn-cpu-start').addEventListener('click', () => {
+      const canvas = document.getElementById('cpu-canvas');
+      const ctx = canvas.getContext('2d');
+      function heavyFrame() {
+        // Intentionally heavy computation in rAF
+        let sum = 0;
+        for (let i = 0; i < 5000000; i++) {
+          sum += Math.sin(i) * Math.cos(i);
+        }
+        ctx.clearRect(0, 0, 400, 100);
+        ctx.fillStyle = `hsl(${sum % 360}, 70%, 50%)`;
+        ctx.fillRect(0, 0, 400, 100);
+        ctx.fillStyle = 'white';
+        ctx.font = '14px monospace';
+        ctx.fillText(`CPU: heavy computation running (sum=${sum.toFixed(2)})`, 10, 55);
+        cpuAnimId = requestAnimationFrame(heavyFrame);
+      }
+      heavyFrame();
+    });
+    document.getElementById('btn-cpu-stop').addEventListener('click', () => {
+      if (cpuAnimId) cancelAnimationFrame(cpuAnimId);
+    });
+
+    // Bug 3: DOM bloat
+    document.getElementById('btn-dom-bloat').addEventListener('click', () => {
+      const container = document.getElementById('dom-container');
+      for (let i = 0; i < 1000; i++) {
+        const div = document.createElement('div');
+        div.textContent = `Node ${i}: ${Math.random().toString(36).substring(2)}`;
+        div.style.padding = '2px';
+        div.style.fontSize = '11px';
+        div.style.borderBottom = '1px solid #f3f4f6';
+        container.appendChild(div);
+      }
+    });
+
+    // Bug 4: Interval leak on page load
+    let ticks = 0;
+    const leakyInterval = setInterval(() => {
+      ticks++;
+      document.getElementById('interval-log').textContent = `Ticks: ${ticks}`;
+      console.log(`[INTERVAL_LEAK] Tick ${ticks} - this interval was never cleared`);
+    }, 200);
+    intervalIds.push(leakyInterval);
+    // Intentionally NO clearInterval
+
+    // Bug 5: Large closure
+    const closureStore = [];
+    document.getElementById('btn-closure').addEventListener('click', () => {
+      const bigString = 'x'.repeat(10 * 1024 * 1024); // 10MB
+      closureStore.push(() => bigString.length); // Closure holds reference
+      document.getElementById('closure-status').textContent =
+        `Created closure holding ${closureStore.length * 10}MB`;
+    });
+
+    // Resource monitor update
+    setInterval(() => {
+      document.getElementById('dom-count').textContent =
+        `DOM Nodes: ${document.querySelectorAll('*').length}`;
+      document.getElementById('interval-count').textContent =
+        `Active Intervals: ${intervalIds.length}`;
+      document.getElementById('leak-size').textContent =
+        `Leak Array Size: ${leakArray.length} entries (~${Math.round(leakArray.length * 80 / 1024)}KB)`;
+      if (performance.memory) {
+        document.getElementById('memory-est').textContent =
+          `Heap: ${Math.round(performance.memory.usedJSHeapSize / 1024 / 1024)}MB / ${Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024)}MB`;
+      } else {
+        document.getElementById('memory-est').textContent = 'Heap: N/A (Chrome only)';
+      }
+    }, 1000);
+  </script>
+</body>
+</html>

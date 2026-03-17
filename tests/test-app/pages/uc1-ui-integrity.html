@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UC-1: Visual & UI Integrity</title>
+  <!-- BUG: This CSS file doesn't exist (404) -->
+  <link rel="stylesheet" href="/static/missing-styles.css">
+  <!-- BUG: Broken font URL -->
+  <style>
+    @font-face {
+      font-family: 'BrokenFont';
+      src: url('/static/nonexistent-font.woff2') format('woff2');
+      font-display: swap;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; padding: 2rem; background: #fff; }
+    h1 { margin-bottom: 1rem; }
+    .test-section { margin: 2rem 0; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; }
+    .test-section h2 { margin-bottom: 0.5rem; font-size: 1rem; color: #6b7280; }
+
+    /* BUG 1: Button looks clickable but pointer-events disabled */
+    .btn-broken { background: #2563eb; color: white; padding: 0.75rem 1.5rem; border: none;
+      border-radius: 6px; font-size: 1rem; cursor: pointer; pointer-events: none; }
+
+    /* Normal button for comparison */
+    .btn-working { background: #16a34a; color: white; padding: 0.75rem 1.5rem; border: none;
+      border-radius: 6px; font-size: 1rem; cursor: pointer; }
+
+    /* BUG 2: Hidden overflow cutting off content */
+    .overflow-box { width: 200px; height: 50px; overflow: hidden; border: 2px solid #ef4444;
+      padding: 0.5rem; }
+    .overflow-content { width: 400px; }
+
+    /* BUG 3: Z-index issue - modal behind overlay */
+    .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); z-index: 100; display: none; }
+    .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: white; padding: 2rem; border-radius: 8px; z-index: 50; display: none; }
+    /* BUG: modal z-index (50) is LOWER than overlay (100) */
+
+    /* BUG 4: Image with wrong aspect ratio */
+    .stretched-img { width: 300px; height: 100px; /* Forces stretch */ }
+
+    /* BUG 5: Section that uses the broken font */
+    .broken-font-section { font-family: 'BrokenFont', serif; font-size: 1.2rem; }
+  </style>
+</head>
+<body>
+  <h1>UC-1: Visual & UI Integrity Test</h1>
+  <p><a href="/">Back to index</a></p>
+
+  <div class="test-section">
+    <h2>Bug 1: Non-clickable button (pointer-events: none)</h2>
+    <button class="btn-broken" onclick="alert('This should never fire')">Click Me (Broken)</button>
+    <button class="btn-working" onclick="document.getElementById('click-result').textContent='Clicked!'">Click Me (Working)</button>
+    <p id="click-result" style="margin-top:0.5rem;"></p>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 2: Content cut off by overflow:hidden</h2>
+    <div class="overflow-box">
+      <div class="overflow-content">
+        This important text is cut off because the container is too small and overflow is hidden. You cannot see this part.
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 3: Modal behind overlay (z-index issue)</h2>
+    <button class="btn-working" onclick="document.getElementById('overlay').style.display='block';document.getElementById('modal').style.display='block';">
+      Open Modal
+    </button>
+    <div id="overlay" class="overlay"></div>
+    <div id="modal" class="modal">
+      <h3>I'm behind the overlay!</h3>
+      <p>You can't interact with me because my z-index is lower than the overlay.</p>
+      <button onclick="document.getElementById('overlay').style.display='none';document.getElementById('modal').style.display='none';">Close</button>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 4: Stretched image (wrong aspect ratio)</h2>
+    <!-- Using a data URI for a simple colored rectangle so the page works standalone -->
+    <img class="stretched-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' fill='%234f46e5'%3E%3Crect width='200' height='200'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-size='20'%3E200x200%3C/text%3E%3C/svg%3E" alt="Should be square but is stretched">
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 5: Broken font (font file 404)</h2>
+    <div class="broken-font-section">
+      This text should use a custom font but the font file doesn't exist. The browser will fall back to serif.
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 6: Missing CSS file causes unstyled section</h2>
+    <div class="styled-from-missing-css">
+      This section relies on classes from missing-styles.css. It should have a blue background and white text, but it doesn't because the CSS file returns 404.
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UC-12: Slow Network Conditions</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; padding: 2rem; }
+    h1 { margin-bottom: 1rem; }
+    .test-section { margin: 2rem 0; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; }
+    .test-section h2 { margin-bottom: 0.5rem; font-size: 1rem; color: #6b7280; }
+    .btn { background: #2563eb; color: white; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; }
+    .content-area { min-height: 200px; background: #f9fafb; border-radius: 8px; padding: 1rem; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>UC-12: Slow Network Conditions</h1>
+  <p><a href="/">Back to index</a></p>
+  <p style="color:#6b7280; margin-bottom:1rem;">These tests expose issues visible under degraded network conditions.</p>
+
+  <div class="test-section">
+    <h2>Bug 1: No loading spinner (blank page during slow load)</h2>
+    <button class="btn" id="btn-no-loader">Load Products (No Spinner)</button>
+    <div class="content-area" id="no-loader-area">
+      <!-- BUG: No loading indicator - just blank until data arrives -->
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 2: API timeout not handled (infinite loading)</h2>
+    <button class="btn" id="btn-timeout">Load from Slow API (5s)</button>
+    <div class="content-area" id="timeout-area">
+      <!-- BUG: No timeout handling, no abort controller -->
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 3: Image without placeholder (broken layout)</h2>
+    <div style="display:flex; gap:1rem;">
+      <div style="flex:1;">
+        <p style="margin-bottom:0.5rem;">Image with no placeholder or dimensions:</p>
+        <!-- BUG: No width/height, no placeholder, layout jumps when loaded -->
+        <img src="/api/slow-image" alt="Slow loading product">
+      </div>
+      <div style="flex:1;">
+        <p style="margin-bottom:0.5rem;">Good: Image with placeholder and dimensions:</p>
+        <div style="width:200px; height:200px; background:#e5e7eb; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#9ca3af;">
+          Loading...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Bug 4: No retry logic on failed fetch</h2>
+    <button class="btn" id="btn-no-retry">Fetch Data (May Fail)</button>
+    <div class="content-area" id="no-retry-area">
+      <!-- BUG: Single fetch attempt, no retry, no error recovery UI -->
+    </div>
+  </div>
+
+  <script>
+    // Bug 1: No loading indicator
+    document.getElementById('btn-no-loader').addEventListener('click', () => {
+      const area = document.getElementById('no-loader-area');
+      area.textContent = ''; // Just blank - no spinner, no "Loading..."
+      fetch('/api/products')
+        .then(r => r.json())
+        .then(data => {
+          area.innerHTML = data.products.map(p =>
+            `<div style="padding:0.5rem; border-bottom:1px solid #e5e7eb;">${p.name} - $${p.price}</div>`
+          ).join('');
+        });
+    });
+
+    // Bug 2: No timeout
+    document.getElementById('btn-timeout').addEventListener('click', () => {
+      const area = document.getElementById('timeout-area');
+      area.textContent = 'Loading...';
+      // No AbortController, no timeout, no error handling
+      fetch('/api/slow-image')
+        .then(r => r.blob())
+        .then(blob => {
+          area.textContent = `Loaded ${blob.size} bytes (after ~5 second delay)`;
+        });
+      // If network is throttled, this could hang indefinitely
+    });
+
+    // Bug 4: No retry
+    document.getElementById('btn-no-retry').addEventListener('click', () => {
+      const area = document.getElementById('no-retry-area');
+      area.textContent = 'Fetching...';
+      fetch('/api/data') // Returns malformed JSON
+        .then(r => r.json())
+        .then(data => {
+          area.textContent = 'Success: ' + JSON.stringify(data);
+        })
+        .catch(err => {
+          area.textContent = 'Failed: ' + err.message;
+          // BUG: No retry button, no automatic retry, just shows error
+        });
+    });
+  </script>
+</body>
+</html>

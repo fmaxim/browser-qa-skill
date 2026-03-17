@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UC-6: Debug Console Logging</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      padding: 24px;
+      max-width: 920px;
+      margin: 0 auto;
+      min-height: 100vh;
+    }
+    h1 { font-size: 1.5rem; color: #f0f6fc; margin-bottom: 4px; }
+    .subtitle { color: #8b949e; font-size: 0.88rem; margin-bottom: 28px; }
+
+    /* Grid layout */
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    @media (max-width: 620px) { .grid { grid-template-columns: 1fr; } }
+
+    /* Cards */
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+    .card-full { grid-column: 1 / -1; }
+    .card-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #8b949e;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .badge {
+      font-size: 0.68rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .badge-ok   { background: #1a4a2e; color: #56d364; }
+    .badge-err  { background: #4a1a1a; color: #f85149; }
+    .badge-warn { background: #3d2f00; color: #d29922; }
+    .badge-info { background: #112240; color: #58a6ff; }
+
+    /* Metric rows */
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 0;
+      border-bottom: 1px solid #21262d;
+      font-size: 0.85rem;
+    }
+    .metric-row:last-child { border-bottom: none; }
+    .metric-key { color: #8b949e; }
+    .metric-val { color: #f0f6fc; font-weight: 600; font-family: 'Menlo', 'Consolas', monospace; }
+    .metric-val.null { color: #f85149; }
+    .metric-val.ok   { color: #56d364; }
+    .metric-val.warn { color: #d29922; }
+
+    /* Console output panel */
+    #console-panel {
+      background: #010409;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-family: 'Menlo', 'Consolas', monospace;
+      font-size: 0.78rem;
+      line-height: 1.8;
+      min-height: 220px;
+      max-height: 380px;
+      overflow-y: auto;
+    }
+    .log-line { display: flex; gap: 8px; }
+    .log-ts   { color: #3d444d; flex-shrink: 0; min-width: 82px; }
+    .log-level { flex-shrink: 0; min-width: 54px; font-weight: 700; }
+    .log-msg  { word-break: break-all; }
+    .level-debug { color: #58a6ff; }
+    .level-error { color: #f85149; }
+    .level-warn  { color: #d29922; }
+    .level-info  { color: #8b949e; }
+
+    /* Response header box */
+    #header-display {
+      background: #010409;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-family: 'Menlo', 'Consolas', monospace;
+      font-size: 0.8rem;
+      color: #79c0ff;
+      word-break: break-all;
+      min-height: 32px;
+    }
+
+    /* Buttons */
+    .btn-refresh {
+      background: #21262d;
+      color: #c9d1d9;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 7px 18px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-refresh:hover { background: #30363d; }
+
+    /* Status indicator */
+    .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    .dot-green { background: #56d364; }
+    .dot-red   { background: #f85149; }
+    .dot-yellow { background: #d29922; }
+
+    a.back {
+      display: inline-block;
+      margin-top: 32px;
+      font-size: 0.88rem;
+      color: #58a6ff;
+      text-decoration: none;
+    }
+    a.back:hover { text-decoration: underline; }
+
+    code { background: #21262d; padding: 1px 5px; border-radius: 3px; font-family: 'Menlo', monospace; font-size: 0.82rem; color: #79c0ff; }
+  </style>
+</head>
+<body>
+
+  <h1>UC-6: Debug Console Logging</h1>
+  <p class="subtitle">Developer debug dashboard. Calls <code>/api/debug-info</code> and surfaces structured debug output. Intentional errors and warnings buried in the log.</p>
+
+  <div class="grid">
+
+    <!-- Debug values display -->
+    <div class="card">
+      <div class="card-title">
+        Runtime Debug Values
+        <span id="status-badge" class="badge badge-info">Loading…</span>
+      </div>
+      <div id="debug-values">
+        <div class="metric-row"><span class="metric-key">user_segment</span><span class="metric-val" id="val-user-segment">—</span></div>
+        <div class="metric-row"><span class="metric-key">experiment_variant</span><span class="metric-val" id="val-experiment-variant">—</span></div>
+        <div class="metric-row"><span class="metric-key">cache_hit</span><span class="metric-val" id="val-cache-hit">—</span></div>
+        <div class="metric-row"><span class="metric-key">feature_flags.new_checkout</span><span class="metric-val" id="val-ff-checkout">—</span></div>
+        <div class="metric-row"><span class="metric-key">feature_flags.dark_mode</span><span class="metric-val" id="val-ff-dark">—</span></div>
+        <div class="metric-row"><span class="metric-key">feature_flags.ab_test</span><span class="metric-val" id="val-ff-ab">—</span></div>
+        <div class="metric-row"><span class="metric-key">request_id</span><span class="metric-val" id="val-request-id" style="font-size:0.75rem">—</span></div>
+        <div class="metric-row"><span class="metric-key">server_time</span><span class="metric-val" id="val-server-time" style="font-size:0.75rem">—</span></div>
+      </div>
+    </div>
+
+    <!-- Response header + refresh -->
+    <div class="card" style="display:flex;flex-direction:column;gap:14px;">
+      <div>
+        <div class="card-title">X-Debug-Info Response Header</div>
+        <div id="header-display">Waiting for response…</div>
+      </div>
+      <div>
+        <div class="card-title" style="margin-bottom:8px">Actions</div>
+        <button class="btn-refresh" onclick="loadDebugInfo()">&#8635; Refresh Debug</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Console output panel -->
+  <div class="card card-full" style="margin-bottom:20px">
+    <div class="card-title">
+      Console Output (mirrored from browser console)
+      <span class="badge badge-info">Live</span>
+    </div>
+    <div id="console-panel"><span style="color:#3d444d">No output yet…</span></div>
+  </div>
+
+  <a class="back" href="/">&#8592; Back to index</a>
+
+  <script>
+    var consolePanel = document.getElementById('console-panel');
+    var consoleLines = [];
+
+    function ts() {
+      return new Date().toISOString().slice(11, 23);
+    }
+
+    // Mirror console output to the on-page panel
+    function addConsoleLine(level, msg) {
+      var cssClass = 'level-' + level;
+      var line = [
+        '<div class="log-line">',
+        '<span class="log-ts">', ts(), '</span>',
+        '<span class="log-level ', cssClass, '">[', level.toUpperCase(), ']</span>',
+        '<span class="log-msg">', escapeHtml(msg), '</span>',
+        '</div>'
+      ].join('');
+      if (consoleLines.length === 0) consolePanel.innerHTML = '';
+      consoleLines.push(line);
+      consolePanel.innerHTML = consoleLines.join('');
+      consolePanel.scrollTop = consolePanel.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // Wrap console methods to also mirror output to panel
+    var origLog   = console.log.bind(console);
+    var origError = console.error.bind(console);
+    var origWarn  = console.warn.bind(console);
+
+    console.log = function() {
+      origLog.apply(console, arguments);
+      addConsoleLine('debug', Array.prototype.join.call(arguments, ' '));
+    };
+    console.error = function() {
+      origError.apply(console, arguments);
+      addConsoleLine('error', Array.prototype.join.call(arguments, ' '));
+    };
+    console.warn = function() {
+      origWarn.apply(console, arguments);
+      addConsoleLine('warn', Array.prototype.join.call(arguments, ' '));
+    };
+
+    // DOM updater
+    function setVal(id, value, cssClass) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = (value === null || value === undefined) ? 'null' : String(value);
+      el.className = 'metric-val ' + (cssClass || '');
+    }
+
+    function loadDebugInfo() {
+      var badge = document.getElementById('status-badge');
+      badge.textContent = 'Loading…';
+      badge.className = 'badge badge-info';
+
+      fetch('/api/debug-info')
+        .then(function(res) {
+          // Capture X-Debug-Info response header
+          var debugHeader = res.headers.get('X-Debug-Info') || '(header not present)';
+          document.getElementById('header-display').textContent = debugHeader;
+
+          return res.json().then(function(data) {
+            return { data: data, ok: res.ok };
+          });
+        })
+        .then(function(result) {
+          var data = result.data;
+
+          // [DEBUG] log the full response
+          console.log('[DEBUG] /api/debug-info response:', JSON.stringify(data));
+
+          // [DEBUG] individual fields
+          console.log('[DEBUG] user_segment:', data.user_segment);
+
+          // INTENTIONAL BUG: user_segment is null — buried [ERROR] log
+          if (!data.user_segment) {
+            console.error('[ERROR] user_segment is null');
+          }
+
+          console.log('[DEBUG] experiment_variant:', data.experiment_variant);
+
+          // INTENTIONAL BUG: variant mismatch — buried [WARN] log
+          if (data.experiment_variant !== 'treatment') {
+            console.warn('[WARN] experiment_variant mismatch: expected treatment, got ' + data.experiment_variant);
+          }
+
+          console.log('[DEBUG] feature_flags:', JSON.stringify(data.feature_flags));
+          console.log('[DEBUG] cache_hit:', data.cache_hit);
+          console.log('[DEBUG] request_id:', data.request_id);
+          console.log('[DEBUG] server_time:', data.server_time);
+
+          // Update DOM
+          setVal('val-user-segment',       data.user_segment,                  data.user_segment ? 'ok' : 'null');
+          setVal('val-experiment-variant', data.experiment_variant,             data.experiment_variant === 'treatment' ? 'ok' : 'warn');
+          setVal('val-cache-hit',          data.cache_hit,                     data.cache_hit ? 'ok' : '');
+          setVal('val-ff-checkout',        data.feature_flags && data.feature_flags.new_checkout, data.feature_flags && data.feature_flags.new_checkout ? 'ok' : '');
+          setVal('val-ff-dark',            data.feature_flags && data.feature_flags.dark_mode,    data.feature_flags && data.feature_flags.dark_mode ? 'ok' : '');
+          setVal('val-ff-ab',              data.feature_flags && data.feature_flags.ab_test,      data.feature_flags && data.feature_flags.ab_test ? 'ok' : '');
+          setVal('val-request-id',         data.request_id);
+          setVal('val-server-time',        data.server_time);
+
+          badge.textContent = 'Loaded';
+          badge.className = 'badge badge-ok';
+        })
+        .catch(function(err) {
+          console.error('[ERROR] Failed to fetch /api/debug-info:', err.message);
+          badge.textContent = 'Error';
+          badge.className = 'badge badge-err';
+        });
+    }
+
+    // Load on page startup
+    loadDebugInfo();
+  </script>
+
+</body>
+</html>
